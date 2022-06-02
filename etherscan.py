@@ -281,9 +281,18 @@ def getChromeDriver():
     return driver
 
 
+def waitCloudflare(driver):
+    global busy
+    while "Checking your browser" in driver.page_source:
+        busy = True
+        time.sleep(random.randint(3, 5))
+    busy = False
+
+
 def reCaptchaSolver(driver):
     driver.get(page_url)
     time.sleep(2)
+    waitCloudflare(driver)
     while "busy" in driver.current_url or "unusual traffic" in driver.page_source.lower():
         time.sleep(3)
         driver.get(page_url)
