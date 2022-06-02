@@ -389,5 +389,5 @@ def checkToken():
 
 
 if __name__ == '__main__':
-    # main()
-    checkAccount()
+    main()
+    # checkAccount()
