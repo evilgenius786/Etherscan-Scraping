@@ -272,7 +272,10 @@ def main():
 
 def launchChrome():
     try:
-        os.system('/usr/bin/google-chrome --headless --remote-debugging-port=9222')
+        print("Launching chrome...")
+        os.system(f'/usr/bin/google-chrome --headless --remote-debugging-port=9222 --user-data-dir='
+                  f'{os.getcwd()}/ChromeProfile')
+        print("Launched chrome...")
     except:
         traceback.print_exc()
 
@@ -284,14 +287,12 @@ def getChromeDriver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--blink-settings=imagesEnabled=false")
-    if debug:
+    chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
+    if os.name != 'nt':
         chrome_options.debugger_address = "127.0.0.1:9222"
-    else:
-        chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
-        if os.name != 'nt':
-            threading.Thread(target=launchChrome).start()
-            chrome_options.add_argument("--headless")
-            chrome_options.add_argument("--remote-debugging-port=9222")
+        threading.Thread(target=launchChrome).start()
+        chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--remote-debugging-port=9222")
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
         options=chrome_options)
