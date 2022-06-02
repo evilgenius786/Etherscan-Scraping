@@ -188,15 +188,20 @@ def scrapeLabel(driver, label, at):
             print(soup.find('div', {"role": "status"}).text.strip())
             print("Total pages:", pagenos)
             for i in range(0, int(pagenos)):
-                print(f"Working on page#{i + 1}")
-                driver.get(f'https://{es}/{at}/label/{label}?'
-                           f'subcatid={subcats[subcat]}&size=100&start={i * 100}&order=asc')
-                time.sleep(1)
-                getElement(driver, '//tr[@class="odd" and @role="row"]/td')
-                soup = getSoup(driver)
-                table = soup.find('table', {"id": f"table-subcatid-{subcats[subcat]}"})
-                ths = table.find('thead').find_all('th')
-                trs = table.find('tbody').find_all('tr')
+                while True:
+                    try:
+                        print(f"Working on page#{i + 1}")
+                        driver.get(f'https://{es}/{at}/label/{label}?'
+                                   f'subcatid={subcats[subcat]}&size=100&start={i * 100}&order=asc')
+                        time.sleep(1)
+                        getElement(driver, '//tr[@class="odd" and @role="row"]/td')
+                        soup = getSoup(driver)
+                        table = soup.find('table', {"id": f"table-subcatid-{subcats[subcat]}"})
+                        ths = table.find('thead').find_all('th')
+                        trs = table.find('tbody').find_all('tr')
+                        break
+                    except:
+                        pass
                 rows = []
                 for tr in trs:
                     tds = tr.find_all('td')
