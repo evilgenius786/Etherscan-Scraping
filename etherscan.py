@@ -366,6 +366,7 @@ def getTag(soup, tag, attrib):
 
 
 def getElement(driver, xpath):
+    waitCloudflare(driver)
     return WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, xpath)))
 
 
