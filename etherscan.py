@@ -278,7 +278,9 @@ def getChromeDriver():
         chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
         if os.name != 'nt':
             try:
+                print("Launching chrome...")
                 Popen(['/usr/bin/google-chrome', 'headless','remote-debugging-port=9222'])
+                print("Chrome launched...")
             except:
                 traceback.print_exc()
             chrome_options.add_argument("--headless")
