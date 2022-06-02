@@ -284,7 +284,7 @@ def getChromeDriver():
         if os.name != 'nt':
             try:
                 print("Launching chrome...")
-                Popen(['/usr/bin/google-chrome', 'headless','remote-debugging-port=9222'])
+                Popen(['/usr/bin/google-chrome --headless --remote-debugging-port=9222'])
                 print("Chrome launched...")
             except:
                 traceback.print_exc()
