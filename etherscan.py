@@ -276,8 +276,12 @@ def getChromeDriver():
     else:
         chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
         if os.name != 'nt':
+            try:
+                os.system('/usr/bin/google-chrome --headless --remote-debugging-port=9222')
+            except:
+                traceback.print_exc()
             chrome_options.add_argument("--headless")
-            # chrome_options.add_argument("--remote-debugging-port=9222")
+            chrome_options.add_argument("--remote-debugging-port=9222")
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
         options=chrome_options)
