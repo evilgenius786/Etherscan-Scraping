@@ -273,7 +273,7 @@ def main():
 def launchChrome():
     try:
         print("Launching chrome...")
-        os.system(f'/usr/bin/google-chrome --headless --remote-debugging-port=9222 --user-data-dir='
+        os.system(f'/usr/bin/google-chrome-stable --headless --remote-debugging-port=9222 --user-data-dir='
                   f'{os.getcwd()}/ChromeProfile')
         print("Launched chrome...")
     except:
