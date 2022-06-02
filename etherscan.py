@@ -5,6 +5,7 @@ import random
 import threading
 import time
 import traceback
+from subprocess import Popen
 
 import requests
 from bs4 import BeautifulSoup
@@ -277,7 +278,7 @@ def getChromeDriver():
         chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
         if os.name != 'nt':
             try:
-                os.system('/usr/bin/google-chrome --headless --remote-debugging-port=9222')
+                Popen(['/usr/bin/google-chrome', 'headless','remote-debugging-port=9222'])
             except:
                 traceback.print_exc()
             chrome_options.add_argument("--headless")
