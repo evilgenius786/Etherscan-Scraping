@@ -156,7 +156,12 @@ def scrape(driver, tr, at):
 def scrapeLabel(driver, label, at):
     print(f"Working on label {label} ({at})")
     driver.get(f'https://{es}/{at}/label/{label}?subcatid=undefined&size=100&start=0&order=asc')
-    getElement(driver, '//tr[@class="odd"]')
+    while True:
+        try:
+            getElement(driver, '//tr[@class="odd"]')
+            break
+        except:
+            pass
     soup = getSoup(driver)
     ul = soup.find('ul', {"class": "nav nav-custom nav-borderless nav_tabs"})
     subcats = {"Main": "0"}
@@ -358,12 +363,13 @@ def getElement(driver, xpath):
 def checkAccount():
     s = requests.Session()
     s.headers = {'user-agent': 'Mozilla/5.0'}
-    adrs = '0xef701d5389ae74503d633396c4d654eabedc9d78'
+    adrs = '0x791018934df872b729eb2852dec200bab6f95709'
     soup = BeautifulSoup(s.get(f'https://{es}/address/{adrs}').content, 'lxml')
     ac_data = {
         "Address": adrs,
         "Subcategory": 'Subcategory',
-        "Label": 'label'
+        "Label": 'label',
+        'Name Tag': ""
     }
     getAccount(soup, ac_data)
 
@@ -383,5 +389,5 @@ def checkToken():
 
 
 if __name__ == '__main__':
-    main()
-    # checkAccount()
+    # main()
+    checkAccount()
