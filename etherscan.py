@@ -2,7 +2,6 @@ import csv
 import json
 import os
 import random
-import sys
 import threading
 import time
 import traceback
@@ -11,10 +10,10 @@ import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
 API_KEY = "05b802522dd0ce9f6cd24b443db4d88a"
@@ -278,7 +277,7 @@ def getChromeDriver():
         chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
         if os.name != 'nt':
             chrome_options.add_argument("--headless")
-            chrome_options.add_argument("--remote-debugging-port=9222")
+            # chrome_options.add_argument("--remote-debugging-port=9222")
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
         options=chrome_options)
@@ -295,6 +294,7 @@ def waitCloudflare(driver):
 
 
 def reCaptchaSolver(driver):
+    print("Logging in...")
     driver.get(page_url)
     time.sleep(2)
     waitCloudflare(driver)
@@ -306,7 +306,6 @@ def reCaptchaSolver(driver):
     if "login" not in driver.current_url:
         print(f"Already logged in as {driver.find_element(By.TAG_NAME, 'h4').text}")
         return
-    print("Logging in...")
     driver.find_element(By.ID, "ContentPlaceHolder1_txtUserName").send_keys("tapendra")
     driver.find_element(By.ID, "ContentPlaceHolder1_txtPassword").send_keys("12345678")
     driver.find_element(By.XPATH, '//label[@for="ContentPlaceHolder1_chkRemember"]').click()
