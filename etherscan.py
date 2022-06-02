@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import random
+import sys
 import threading
 import time
 import traceback
@@ -134,13 +135,13 @@ def scrape(driver, tr, at):
         with semaphore:
             print(f"Working on {at[:-1]} {addr}")
             soup = getSession(driver, url)
-    if "Maintenance Mode" in soup.find('title').text or "Request" in soup.find('h1').text:
+    if "Maintenance Mode" in soup.find('title').text or "Request" == soup.find('h1').text.strip():
         busy = True
         print(soup.find('title').text.strip())
         with lock:
             driver.get(url)
             soup = getSoup(driver)
-            while "Maintenance Mode" in soup.find('title').text or "Request" in soup.find('h1').text:
+            while "Maintenance Mode" in soup.find('title').text or "Request" == soup.find('h1').text.strip():
                 print(soup.find('title').text.strip())
                 busy = True
                 driver.get(url)
@@ -273,7 +274,7 @@ def getChromeDriver():
     if debug:
         chrome_options.debugger_address = "127.0.0.1:9222"
     else:
-        chrome_options.add_argument('--user-data-dir=C:/Selenium1/ChromeProfile')
+        chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
         # chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
@@ -401,4 +402,3 @@ def checkToken():
 
 if __name__ == '__main__':
     main()
-    # checkAccount()
