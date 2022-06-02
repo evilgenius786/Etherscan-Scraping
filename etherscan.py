@@ -159,6 +159,7 @@ def scrapeLabel(driver, label, at):
     driver.get(f'https://{es}/{at}/label/{label}?subcatid=undefined&size=100&start=0&order=asc')
     while True:
         try:
+            print("Fetching rows...")
             getElement(driver, '//tr[@class="odd"]')
             break
         except:
@@ -300,10 +301,12 @@ def reCaptchaSolver(driver):
     while "busy" in driver.current_url or "unusual traffic" in driver.page_source.lower():
         time.sleep(3)
         driver.get(page_url)
+        print("Busy")
     time.sleep(1)
     if "login" not in driver.current_url:
         print(f"Already logged in as {driver.find_element(By.TAG_NAME, 'h4').text}")
         return
+    print("Logging in...")
     driver.find_element(By.ID, "ContentPlaceHolder1_txtUserName").send_keys("tapendra")
     driver.find_element(By.ID, "ContentPlaceHolder1_txtPassword").send_keys("12345678")
     driver.find_element(By.XPATH, '//label[@for="ContentPlaceHolder1_chkRemember"]').click()
@@ -326,6 +329,7 @@ def reCaptchaSolver(driver):
     time.sleep(3)
     button = driver.find_element(By.XPATH, "/html/body/div[1]/main/div/form/div[8]/div[2]/input")
     driver.execute_script("arguments[0].click();", button)
+    print("Logged in!")
     time.sleep(5)
 
 
