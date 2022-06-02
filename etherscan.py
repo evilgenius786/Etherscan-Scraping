@@ -284,6 +284,7 @@ def getChromeDriver():
 def waitCloudflare(driver):
     global busy
     while "Checking your browser" in driver.page_source:
+        print("Waiting for cloudflare...")
         busy = True
         time.sleep(random.randint(3, 5))
     busy = False
