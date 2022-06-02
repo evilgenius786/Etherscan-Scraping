@@ -134,13 +134,13 @@ def scrape(driver, tr, at):
         with semaphore:
             print(f"Working on {at[:-1]} {addr}")
             soup = getSession(driver, url)
-    if "Maintenance Mode" in soup.find('title').text:
+    if "Maintenance Mode" in soup.find('title').text or "Request" in soup.find('h1').text:
         busy = True
         print(soup.find('title').text.strip())
         with lock:
             driver.get(url)
             soup = getSoup(driver)
-            while "Maintenance Mode" in soup.find('title').text:
+            while "Maintenance Mode" in soup.find('title').text or "Request" in soup.find('h1').text:
                 print(soup.find('title').text.strip())
                 busy = True
                 driver.get(url)
@@ -358,7 +358,7 @@ def getElement(driver, xpath):
 def checkAccount():
     s = requests.Session()
     s.headers = {'user-agent': 'Mozilla/5.0'}
-    adrs = '0xe66b31678d6c16e9ebf358268a790b763c133750'
+    adrs = '0xef701d5389ae74503d633396c4d654eabedc9d78'
     soup = BeautifulSoup(s.get(f'https://{es}/address/{adrs}').content, 'lxml')
     ac_data = {
         "Address": adrs,
