@@ -1,11 +1,11 @@
 import csv
 import json
 import os
+import pickle
 import random
 import threading
 import time
 import traceback
-from subprocess import Popen
 
 import requests
 from bs4 import BeautifulSoup
@@ -32,6 +32,7 @@ semaphore = threading.Semaphore(10)
 lock = threading.Lock()
 busy = False
 scraped = {}
+version = 14.0
 
 
 def getToken(soup, tr):
@@ -282,14 +283,25 @@ def launchChrome():
         traceback.print_exc()
 
 
+def saveCookies(driver):
+    pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
+
+
+def loadCookies(driver):
+    cookies = pickle.load(open("cookies.pkl", "rb"))
+    for cookie in cookies:
+        driver.add_cookie(cookie)
+    driver.get('https://etherscan.io/labelcloud')
+
+
 def getChromeDriver():
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument('start-maximized')
-    chrome_options.add_argument(f'user-agent={UserAgent().random}')
+    chrome_options.add_argument('--start-maximized')
+    chrome_options.add_argument(f'--user-agent={UserAgent().random}')
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--blink-settings=imagesEnabled=false")
-    chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
+    # chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
     if os.name != 'nt':
         chrome_options.debugger_address = "127.0.0.1:9222"
         threading.Thread(target=launchChrome, args=()).start()
@@ -298,6 +310,8 @@ def getChromeDriver():
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
         options=chrome_options)
+    driver.get('https://etherscan.io/labelcloud')
+    loadCookies(driver)
     return driver
 
 
@@ -361,7 +375,7 @@ def getSession(driver, url):
 
 
 def logo():
-    print(r"""
+    print(fr"""
     ___________  __   .__                                                   
     \_   _____/_/  |_ |  |__    ____ _______  ______  ____  _____     ____  
      |    __)_ \   __\|  |  \ _/ __ \\_  __ \/  ___/_/ ___\ \__  \   /    \ 
@@ -373,6 +387,7 @@ def logo():
 =================================================================================
 [+] Scrapes accounts and tokens
 [+] CSV/JSON Output
+[+] Version {version}
 _________________________________________________________________________________
 """)
 
