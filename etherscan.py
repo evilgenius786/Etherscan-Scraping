@@ -244,7 +244,7 @@ def scrapeLabel(driver, label, at):
                     thread = threading.Thread(target=scrape, args=(driver, tr, at,))
                     thread.start()
                     threads.append(thread)
-                    time.sleep(1)
+                    time.sleep(0.1)
                 else:
                     print(f"{at} {addr} already scraped!")
     for thread in threads:
