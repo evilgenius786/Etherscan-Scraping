@@ -309,7 +309,7 @@ def getChromeDriver():
         chrome_options.add_argument("--headless")
         # chrome_options.add_argument("--remote-debugging-port=9222")
         driver = webdriver.Chrome(
-            './chromedriver',
+            service=Service('./chromedriver'),
             options=chrome_options)
     else:
         driver = webdriver.Chrome(
