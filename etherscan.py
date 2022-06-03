@@ -32,7 +32,7 @@ semaphore = threading.Semaphore(10)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 16.0
+version = 17.0
 
 
 def getToken(soup, tr):
@@ -276,14 +276,14 @@ def main():
                     print(f"{label} ({at}) already scraped!")
 
 
-def launchChrome():
-    try:
-        print("Launching chrome...")
-        os.system(f'sudo /usr/bin/google-chrome-stable --headless --remote-debugging-port=9222 --no-sandbox'
-                  f' --user-data-dir={os.getcwd()}/ChromeProfile')
-        print("Launched chrome...")
-    except:
-        traceback.print_exc()
+# def launchChrome():
+#     try:
+#         print("Launching chrome...")
+#         os.system(f'sudo /usr/bin/google-chrome-stable --headless --remote-debugging-port=9222 --no-sandbox'
+#                   f' --user-data-dir={os.getcwd()}/ChromeProfile')
+#         print("Launched chrome...")
+#     except:
+#         traceback.print_exc()
 
 
 def getChromeDriver():
