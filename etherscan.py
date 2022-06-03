@@ -32,7 +32,7 @@ semaphore = threading.Semaphore(10)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 17.0
+version = 18.0
 
 
 def getToken(soup, tr):
@@ -247,6 +247,7 @@ def scrapeLabel(driver, label, at):
     with open('scraped_labels.txt', 'a') as sfile:
         sfile.write(f"{label}-{at}\n")
     scraped['labels'].append(label)
+    combineCSVs()
 
 
 def main():
@@ -273,15 +274,41 @@ def main():
         # if x.find('button')['data-url'] not in blocked
     ]
     print(f"Found {len(divs)} labels.")
-    for div in divs:
-        label = div.find('button')['data-url']
-        for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
-            if at.lower() in ['accounts', 'tokens']:
-                if f"{label}-{at}" not in scraped['labels']:
-                    # print(label, at)
-                    scrapeLabel(driver, label, at)
-                else:
-                    print(f"{label} ({at}) already scraped!")
+    try:
+        for div in divs:
+            label = div.find('button')['data-url']
+            for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
+                if at.lower() in ['accounts', 'tokens']:
+                    if f"{label}-{at}" not in scraped['labels']:
+                        # print(label, at)
+                        scrapeLabel(driver, label, at)
+                    else:
+                        print(f"{label} ({at}) already scraped!")
+    except KeyboardInterrupt:
+        pass
+    combineCSVs()
+
+
+def combineCSVs():
+    token_rows = []
+    account_rows = []
+    for file in os.listdir('CSVs'):
+        if file.endswith('-token.csv'):
+            with open(f'./CSVs/{file}') as tfile:
+                token_rows.extend([x for x in csv.DictReader(tfile)])
+        elif file.endswith('-accounts.csv'):
+            with open(f'./CSVs/{file}') as afile:
+                account_rows.extend([x for x in csv.DictReader(afile)])
+    print(f"Account rows: {len(account_rows)}")
+    print(f"Token rows: {len(token_rows)}")
+    with open('AccountsMaster.csv', 'w', newline='', encoding='utf8') as afile:
+        c = csv.DictWriter(afile, fieldnames=account_headers)
+        c.writeheader()
+        c.writerows(account_rows)
+    with open('TokensMaster.csv', 'w', newline='', encoding='utf8') as tfile:
+        c = csv.DictWriter(tfile, fieldnames=token_headers)
+        c.writeheader()
+        c.writerows(token_rows)
 
 
 # def launchChrome():
