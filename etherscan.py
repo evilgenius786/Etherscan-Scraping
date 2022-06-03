@@ -32,7 +32,7 @@ semaphore = threading.Semaphore(10)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 15.0
+version = 16.0
 
 
 def getToken(soup, tr):
@@ -192,17 +192,20 @@ def scrapeLabel(driver, label, at):
                 while True:
                     try:
                         print(f"Working on page#{i + 1}")
-                        driver.get(f'https://{es}/{at}/label/{label}?'
-                                   f'subcatid={subcats[subcat]}&size=100&start={i * 100}&order=asc')
+                        t_url = f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}&size=100&start={i * 100}&order=asc'
+                        print(t_url)
+                        driver.get(t_url)
                         time.sleep(1)
                         getElement(driver, '//tr[@class="odd" and @role="row"]/td')
                         soup = getSoup(driver)
                         table = soup.find('table', {"id": f"table-subcatid-{subcats[subcat]}"})
+                        if table is None:
+                            table = soup.find('table')
                         ths = table.find('thead').find_all('th')
                         trs = table.find('tbody').find_all('tr')
                         break
                     except:
-                        pass
+                        traceback.print_exc()
                 rows = []
                 for tr in trs:
                     tds = tr.find_all('td')
@@ -262,7 +265,7 @@ def main():
         # if x.find('button')['data-url'] not in blocked
     ]
     print(f"Found {len(divs)} labels.")
-    for div in divs:
+    for div in divs[59:]:
         label = div.find('button')['data-url']
         for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
             if at.lower() in ['accounts', 'tokens']:
@@ -281,6 +284,7 @@ def launchChrome():
         print("Launched chrome...")
     except:
         traceback.print_exc()
+
 
 #
 # def saveCookies(driver):
@@ -301,12 +305,13 @@ def getChromeDriver():
     chrome_options.add_argument(f'--user-agent={UserAgent().random}')
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--blink-settings=imagesEnabled=false")
-    # chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
+    chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
     if os.name != 'nt':
         chrome_options.add_extension('2captcha.crx')
         # chrome_options.debugger_address = "127.0.0.1:9222"
         # threading.Thread(target=launchChrome, args=()).start()
-        chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--headless")
+        # chrome_options.se
         # chrome_options.add_argument("--remote-debugging-port=9222")
         driver = webdriver.Chrome(
             service=Service('./chromedriver'),
