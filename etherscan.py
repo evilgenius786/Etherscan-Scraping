@@ -1,7 +1,6 @@
 import csv
 import json
 import os
-# import pickle
 import random
 import threading
 import time
@@ -28,12 +27,12 @@ account_headers = ['Address', 'Name Tag', 'Name Tag URL', 'AddressLink', 'Addres
                    'Subcategory', 'Time']
 token_headers = ['Address', 'AddressLink', 'Name', 'Abbreviation', 'Website', 'SocialLinks', 'Image', 'LabelIDs',
                  'OverviewText', 'MarketCap', 'Holder', 'AdditionalInfo', 'Overview', 'AddressType', 'Time']
-thread_count=20
+thread_count = 20
 semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 18.0
+version = 20.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -245,7 +244,7 @@ def scrapeLabel(driver, label, at):
                     thread = threading.Thread(target=scrape, args=(driver, tr, at,))
                     thread.start()
                     threads.append(thread)
-                    time.sleep(0.5)
+                    time.sleep(1)
                 else:
                     print(f"{at} {addr} already scraped!")
     for thread in threads:
@@ -260,6 +259,9 @@ def main():
     global scraped
     logo()
     time.sleep(0.5)
+    if not os.path.isfile('zyte-proxy-ca.crt'):
+        with open('zyte-proxy-ca.crt', 'w') as zfile:
+            zfile.write(cert)
     driver = getChromeDriver()
     if not debug:
         reCaptchaSolver(driver)
@@ -315,16 +317,6 @@ def combineCSVs():
         c = csv.DictWriter(tfile, fieldnames=token_headers)
         c.writeheader()
         c.writerows(token_rows)
-
-
-# def launchChrome():
-#     try:
-#         print("Launching chrome...")
-#         os.system(f'sudo /usr/bin/google-chrome-stable --headless --remote-debugging-port=9222 --no-sandbox'
-#                   f' --user-data-dir={os.getcwd()}/ChromeProfile')
-#         print("Launched chrome...")
-#     except:
-#         traceback.print_exc()
 
 
 def getChromeDriver():
@@ -472,5 +464,30 @@ def checkIp():
     print(res.json())
 
 
+cert = """-----BEGIN CERTIFICATE-----
+MIIERzCCAy+gAwIBAgIJAN/VCi6U4Y5SMA0GCSqGSIb3DQEBCwUAMIG5MQswCQYD
+VQQGEwJJRTEQMA4GA1UECAwHTXVuc3RlcjENMAsGA1UEBwwEQ29yazEUMBIGA1UE
+CgwLU2NyYXBpbmdIdWIxNTAzBgNVBAsMLExlYWRpbmcgVGVjaG5vbG9neSBhbmQg
+UHJvZmVzc2lvbmFsIFNlcnZpY2VzMRQwEgYDVQQDDAtDcmF3bGVyYSBDQTEmMCQG
+CSqGSIb3DQEJARYXc3VwcG9ydEBzY3JhcGluZ2h1Yi5jb20wHhcNMTUwNTE5MTQ1
+NjA3WhcNMjUwNTE2MTQ1NjA3WjCBuTELMAkGA1UEBhMCSUUxEDAOBgNVBAgMB011
+bnN0ZXIxDTALBgNVBAcMBENvcmsxFDASBgNVBAoMC1NjcmFwaW5nSHViMTUwMwYD
+VQQLDCxMZWFkaW5nIFRlY2hub2xvZ3kgYW5kIFByb2Zlc3Npb25hbCBTZXJ2aWNl
+czEUMBIGA1UEAwwLQ3Jhd2xlcmEgQ0ExJjAkBgkqhkiG9w0BCQEWF3N1cHBvcnRA
+c2NyYXBpbmdodWIuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA
+3I3nDH62M7FHT6HG5ZNS9cBeXmMZaKaxYdr+7ioSiVXzruDkH3uX6CQZLkvR2KpG
+icHOnd0FM4S4rHYQoWc82b/UGgwjQdi47ED8fqCPusEcgo/7eY3y2Y/JivEWKk6f
+z+gBlvEHjKj2EyzZ7FaExTEMQTTe28EroXTNySUctY9jprtKrs8jjGXd2sR6AHF1
+M6O+5CT/5kXhuDO9/Q9Tfym7wxBsU/k+6hhNH+RkYlNEvkv0d8vdku/ZKTCBuL9D
+NTqgXFvAmOj0MNEjf5kFrF95g+k5+PxPU04TPUtOwU30GYbCjE+ecYsoTODg6+ju
+TQoNk3RFt0A0wZS3ly1rnQIDAQABo1AwTjAdBgNVHQ4EFgQUn6fXHOpDIsaswTMr
+K2DwcOHLtZ0wHwYDVR0jBBgwFoAUn6fXHOpDIsaswTMrK2DwcOHLtZ0wDAYDVR0T
+BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAQEAOLtBuyHixFblY2BieG3ZCs8D74Xc
+Z1usYCUNuVxOzKhuLt/cv49r39SVienqvS2UTr3kmKdyaaRJnYQ06b5FmAP72vdI
+4wUAU2F7bFErAVnH1rihB+YMRE/5/6VPLfwuK8yf3rkzdrKcV2DlRQwsnwroSIR8
+iON6JK2HOI0/LsKxPXUk9cHrli7e99yazS5+jBhRFGx8AVfoJg/6uLe6IKuw5xEZ
+xAzDdjEIB/tf1cE0SQ+5sdmepO1cIjQYVSL7U+br+y9A1J9N+FYkBKVevM/W25tb
+iGWBe46djkdm/6eyQ7gtuxhby5lwtRl5sIm9/ID/vWWDMf8O4GPPnW/Xug==
+-----END CERTIFICATE-----"""
 if __name__ == '__main__':
     main()
