@@ -32,7 +32,7 @@ semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 21.0
+version = 22.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -263,15 +263,16 @@ def main():
         with open('zyte-proxy-ca.crt', 'w') as zfile:
             zfile.write(cert)
     driver = getChromeDriver()
-    if not debug:
-        reCaptchaSolver(driver)
     for x in ['labels', 'accounts', 'tokens']:
         if os.path.isfile(f"scraped_{x}.txt"):
             with open(f"scraped_{x}.txt") as afile:
                 scraped[x] = afile.read().splitlines()
         else:
             scraped[x] = []
-        print(f"Scraped {x}: {len(scraped['x'])}")
+        print(f"Scraped {x}: {len(scraped[x])}")
+    if not debug:
+        reCaptchaSolver(driver)
+
     if not os.path.isdir('CSVs'):
         os.mkdir('CSVs')
     driver.get(f'https://{es}/labelcloud')
