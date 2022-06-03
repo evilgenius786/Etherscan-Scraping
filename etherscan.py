@@ -271,6 +271,7 @@ def main():
                 scraped[x] = afile.read().splitlines()
         else:
             scraped[x] = []
+        print(f"Scraped {x}: {len(scraped['x'])}")
     if not os.path.isdir('CSVs'):
         os.mkdir('CSVs')
     driver.get(f'https://{es}/labelcloud')
