@@ -290,7 +290,7 @@ def getChromeDriver():
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument('--start-maximized')
-    chrome_options.add_argument(f'--user-agent={UserAgent().random}')
+    chrome_options.add_argument(f'user-agent={UserAgent().random}')
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--blink-settings=imagesEnabled=false")
     # chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
