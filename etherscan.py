@@ -32,7 +32,7 @@ semaphore = threading.Semaphore(10)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 14.0
+version = 15.0
 
 
 def getToken(soup, tr):
