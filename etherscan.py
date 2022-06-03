@@ -306,6 +306,7 @@ def getChromeDriver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--blink-settings=imagesEnabled=false")
     chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
+    capabilities = {'chrome.binary': "/usr/bin/google-chrome-stable"}
     if os.name != 'nt':
         chrome_options.add_extension('2captcha.crx')
         # chrome_options.debugger_address = "127.0.0.1:9222"
@@ -315,7 +316,7 @@ def getChromeDriver():
         # chrome_options.add_argument("--remote-debugging-port=9222")
         driver = webdriver.Chrome(
             service=Service('./chromedriver'),
-            executable_path='/usr/bin/google-chrome-stable',
+            desired_capabilities=capabilities,
             options=chrome_options)
     else:
         driver = webdriver.Chrome(
