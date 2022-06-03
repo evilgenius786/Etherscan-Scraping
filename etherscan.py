@@ -286,18 +286,6 @@ def launchChrome():
         traceback.print_exc()
 
 
-#
-# def saveCookies(driver):
-#     pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
-#
-#
-# def loadCookies(driver):
-#     cookies = pickle.load(open("cookies.pkl", "rb"))
-#     for cookie in cookies:
-#         driver.add_cookie(cookie)
-#     driver.get('https://etherscan.io/labelcloud')
-
-
 def getChromeDriver():
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--no-sandbox")
@@ -305,17 +293,15 @@ def getChromeDriver():
     chrome_options.add_argument(f'--user-agent={UserAgent().random}')
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--blink-settings=imagesEnabled=false")
-    chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
+    # chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
     if os.name != 'nt':
         # chrome_options.add_extension('2captcha.crx')
-        chrome_options.debugger_address = "127.0.0.1:9222"
-        threading.Thread(target=launchChrome, args=()).start()
+        # chrome_options.debugger_address = "127.0.0.1:9222"
+        # threading.Thread(target=launchChrome, args=()).start()
         chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
         options=chrome_options)
-    # driver.get('https://etherscan.io/labelcloud')
-    # loadCookies(driver)
     return driver
 
 
