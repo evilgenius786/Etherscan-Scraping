@@ -303,8 +303,9 @@ def getChromeDriver():
     chrome_options.add_argument("--blink-settings=imagesEnabled=false")
     # chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
     if os.name != 'nt':
-        chrome_options.debugger_address = "127.0.0.1:9222"
-        threading.Thread(target=launchChrome, args=()).start()
+        chrome_options.add_extension('2captcha.crx')
+        # chrome_options.debugger_address = "127.0.0.1:9222"
+        # threading.Thread(target=launchChrome, args=()).start()
         # chrome_options.add_argument("--headless")
         # chrome_options.add_argument("--remote-debugging-port=9222")
     driver = webdriver.Chrome(
