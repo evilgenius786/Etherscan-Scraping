@@ -288,17 +288,18 @@ def launchChrome():
 
 def getChromeDriver():
     chrome_options = webdriver.ChromeOptions()
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument('--start-maximized')
+    chrome_options.add_argument('start-maximized')
     chrome_options.add_argument(f'user-agent={UserAgent().random}')
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--blink-settings=imagesEnabled=false")
+    chrome_options.add_argument("--no-sandbox")
+    # chrome_options.add_argument("--blink-settings=imagesEnabled=false")
     # chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
     if os.name != 'nt':
         # chrome_options.add_extension('2captcha.crx')
         # chrome_options.debugger_address = "127.0.0.1:9222"
         # threading.Thread(target=launchChrome, args=()).start()
-        chrome_options.add_argument("--headless")
+        pass
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
         options=chrome_options)
