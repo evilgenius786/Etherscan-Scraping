@@ -1,7 +1,7 @@
 import csv
 import json
 import os
-import pickle
+# import pickle
 import random
 import threading
 import time
@@ -282,16 +282,16 @@ def launchChrome():
     except:
         traceback.print_exc()
 
-
-def saveCookies(driver):
-    pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
-
-
-def loadCookies(driver):
-    cookies = pickle.load(open("cookies.pkl", "rb"))
-    for cookie in cookies:
-        driver.add_cookie(cookie)
-    driver.get('https://etherscan.io/labelcloud')
+#
+# def saveCookies(driver):
+#     pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
+#
+#
+# def loadCookies(driver):
+#     cookies = pickle.load(open("cookies.pkl", "rb"))
+#     for cookie in cookies:
+#         driver.add_cookie(cookie)
+#     driver.get('https://etherscan.io/labelcloud')
 
 
 def getChromeDriver():
@@ -305,13 +305,13 @@ def getChromeDriver():
     if os.name != 'nt':
         chrome_options.debugger_address = "127.0.0.1:9222"
         threading.Thread(target=launchChrome, args=()).start()
-        chrome_options.add_argument("--headless")
+        # chrome_options.add_argument("--headless")
         # chrome_options.add_argument("--remote-debugging-port=9222")
     driver = webdriver.Chrome(
         service=Service(ChromeDriverManager().install()),
         options=chrome_options)
-    driver.get('https://etherscan.io/labelcloud')
-    loadCookies(driver)
+    # driver.get('https://etherscan.io/labelcloud')
+    # loadCookies(driver)
     return driver
 
 
