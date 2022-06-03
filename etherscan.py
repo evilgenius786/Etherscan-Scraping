@@ -308,9 +308,13 @@ def getChromeDriver():
         # threading.Thread(target=launchChrome, args=()).start()
         chrome_options.add_argument("--headless")
         # chrome_options.add_argument("--remote-debugging-port=9222")
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options)
+        driver = webdriver.Chrome(
+            './chromedriver',
+            options=chrome_options)
+    else:
+        driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()),
+            options=chrome_options)
     # driver.get('https://etherscan.io/labelcloud')
     # loadCookies(driver)
     return driver
