@@ -21,7 +21,7 @@ API_KEY = "05b802522dd0ce9f6cd24b443db4d88a"
 data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
 es = "etherscan.io"
 page_url = f'https://{es}/login'
-timeout = 10
+timeout = 5
 debug = False
 # blocked = ["liqui.io", "remittance+"]
 account_headers = ['Address', 'Name Tag', 'Name Tag URL', 'AddressLink', 'AddressType', 'LabelIDs',
@@ -158,13 +158,21 @@ def scrape(driver, tr, at):
 def scrapeLabel(driver, label, at):
     print(f"Working on label {label} ({at})")
     driver.get(f'https://{es}/{at}/label/{label}?subcatid=undefined&size=100&start=0&order=asc')
-    while True:
+    for i in range(2):
         try:
             print("Fetching rows...")
             getElement(driver, '//tr[@class="odd"]')
             break
         except:
-            pass
+            time.sleep(1)
+    try:
+        getElement(driver, '//tr[@class="odd"]')
+    except:
+        print(f"No {at} found!")
+        with open('scraped_labels.txt', 'a') as sfile:
+            sfile.write(f"{label}-{at}\n")
+        scraped['labels'].append(f"{label}-{at}")
+        return
     soup = getSoup(driver)
     ul = soup.find('ul', {"class": "nav nav-custom nav-borderless nav_tabs"})
     subcats = {"Main": "0"}
@@ -265,7 +273,7 @@ def main():
         # if x.find('button')['data-url'] not in blocked
     ]
     print(f"Found {len(divs)} labels.")
-    for div in divs[59:]:
+    for div in divs:
         label = div.find('button')['data-url']
         for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
             if at.lower() in ['accounts', 'tokens']:
