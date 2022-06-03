@@ -28,11 +28,17 @@ account_headers = ['Address', 'Name Tag', 'Name Tag URL', 'AddressLink', 'Addres
                    'Subcategory', 'Time']
 token_headers = ['Address', 'AddressLink', 'Name', 'Abbreviation', 'Website', 'SocialLinks', 'Image', 'LabelIDs',
                  'OverviewText', 'MarketCap', 'Holder', 'AdditionalInfo', 'Overview', 'AddressType', 'Time']
-semaphore = threading.Semaphore(10)
+thread_count=20
+semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
 version = 18.0
+proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
+proxies = {
+    "http": proxy,
+    "https": proxy,
+}
 
 
 def getToken(soup, tr):
@@ -393,7 +399,7 @@ def getSession(driver, url):
     }
     for cookie in driver.get_cookies():
         s.cookies.set(cookie['name'], cookie['value'])
-    return BeautifulSoup(s.get(url).content, 'lxml')
+    return BeautifulSoup(s.get(url, proxies=proxies, verify='zyte-proxy-ca.crt').content, 'lxml')
 
 
 def logo():
@@ -409,6 +415,8 @@ def logo():
 =================================================================================
 [+] Scrapes accounts and tokens
 [+] CSV/JSON Output
+[+] Multi-threaded ({thread_count})
+[+] Proxy integrated
 [+] Version {version}
 _________________________________________________________________________________
 """)
@@ -457,6 +465,11 @@ def checkToken():
         "Market Cap": 'MarketCap',
     }
     getToken(soup, tk_data)
+
+
+def checkIp():
+    res = requests.get('http://lumtest.com/myip.json', proxies=proxies)
+    print(res.json())
 
 
 if __name__ == '__main__':
