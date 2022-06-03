@@ -264,10 +264,12 @@ def main():
     for div in divs:
         label = div.find('button')['data-url']
         for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
-            if f"{label}-{at}" not in scraped['labels']:
-                scrapeLabel(driver, label, at)
-            else:
-                print(f"{label} ({at}) already scraped!")
+            if at.lower() in ['accounts', 'tokens']:
+                if f"{label}-{at}" not in scraped['labels']:
+                    # print(label, at)
+                    scrapeLabel(driver, label, at)
+                else:
+                    print(f"{label} ({at}) already scraped!")
 
 
 def launchChrome():
