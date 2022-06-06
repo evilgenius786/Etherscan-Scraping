@@ -35,7 +35,7 @@ semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 25.0
+version = 26.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -146,13 +146,13 @@ def scrape(driver, tr, at, retry=3):
             with semaphore:
                 print(f"Working on {at[:-1]} {addr}")
                 soup = getSession(driver, url)
-        if "Maintenance Mode" in soup.find('title').text or "Request" == soup.find('h1').text.strip():
+        if "Maintenance Mode" in soup.find('title').text or (soup.find('h1') is not None and "Request" == soup.find('h1').text.strip()):
             busy = True
             print(soup.find('title').text.strip())
             with lock:
                 driver.get(url)
                 soup = getSoup(driver)
-                while "Maintenance Mode" in soup.find('title').text or "Request" == soup.find('h1').text.strip():
+                while "Maintenance Mode" in soup.find('title').text or (soup.find('h1') is not None and "Request" == soup.find('h1').text.strip()):
                     print(soup.find('title').text.strip())
                     busy = True
                     driver.get(url)
