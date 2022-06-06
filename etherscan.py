@@ -21,7 +21,7 @@ data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
 es = "etherscan.io"
 page_url = f'https://{es}/login'
 timeout = 5
-debug = True
+debug = False
 blocked = ["eth2-depositor"]
 account_headers = ['Address', 'Name Tag', 'Name Tag URL', 'AddressLink', 'AddressType', 'LabelIDs',
                    'Subcategory', 'Time']
@@ -218,7 +218,7 @@ def scrapeLabel(driver, label, at):
                     lastline = line
             try:
                 start = int(lastline['Page'])
-                print(f'Resuming from page {start}')
+                print(f'Resuming from page {start+1}')
             except:
                 start = 0
         driver.get(f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}&size=100&start=0&order=asc')
@@ -314,7 +314,7 @@ def main():
     ]
     print(f"Found {len(divs)} labels.")
     try:
-        for div in divs[18:]:
+        for div in divs:
             label = div.find('button')['data-url']
             for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
                 if at.lower() in ['accounts', 'tokens']:
