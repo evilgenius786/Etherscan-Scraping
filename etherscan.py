@@ -22,7 +22,7 @@ es = "etherscan.io"
 page_url = f'https://{es}/login'
 timeout = 5
 debug = False
-# blocked = ["liqui.io", "remittance+"]
+blocked = ["eth2-depositor"]
 account_headers = ['Address', 'Name Tag', 'Name Tag URL', 'AddressLink', 'AddressType', 'LabelIDs',
                    'Subcategory', 'Time']
 token_headers = ['Address', 'AddressLink', 'Name', 'Abbreviation', 'Website', 'SocialLinks', 'Image', 'LabelIDs',
@@ -32,7 +32,7 @@ semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 22.0
+version = 23.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -281,7 +281,7 @@ def main():
     soup = getSoup(driver)
     divs = [
         x for x in soup.find_all('div', {'class': btnclass})
-        # if x.find('button')['data-url'] not in blocked
+        if x.find('button')['data-url'] not in blocked
     ]
     print(f"Found {len(divs)} labels.")
     try:
