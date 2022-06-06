@@ -32,7 +32,7 @@ semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 23.0
+version = 24.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -79,12 +79,12 @@ def getToken(soup, tr):
                 csv.DictWriter(file, fieldnames=token_headers).writeheader()
         with open(filename, 'a', newline='', encoding='utf8') as file:
             csv.DictWriter(file, fieldnames=token_headers).writerow(data)
-        with open('scraped_tokens.txt', 'a') as sfile:
+        with open('scraped_tokens.txt', 'a', encoding='utf8') as sfile:
             sfile.write(tkn + "\n")
         scraped['tokens'].append(tkn)
     except:
         traceback.print_exc()
-        with open('Error-Token.txt', 'a') as efile:
+        with open('Error-Token.txt', 'a', encoding='utf8') as efile:
             efile.write(f"{tkn}\n")
 
 
@@ -116,12 +116,12 @@ def getAccount(soup, tr):
                 csv.DictWriter(file, fieldnames=account_headers).writeheader()
         with open(filename, 'a', newline='', encoding='utf8') as file:
             csv.DictWriter(file, fieldnames=account_headers).writerow(data)
-        with open('scraped_accounts.txt', 'a') as sfile:
+        with open('scraped_accounts.txt', 'a', encoding='utf8') as sfile:
             sfile.write(addr + "\n")
         scraped['accounts'].append(addr)
     except:
         traceback.print_exc()
-        with open('Error-Account.txt', 'a') as efile:
+        with open('Error-Account.txt', 'a', encoding='utf8') as efile:
             efile.write(f"{addr}\n")
         # print(soup)
 
@@ -174,7 +174,7 @@ def scrapeLabel(driver, label, at):
         getElement(driver, '//tr[@class="odd"]')
     except:
         print(f"No {at} found!")
-        with open('scraped_labels.txt', 'a') as sfile:
+        with open('scraped_labels.txt', 'a', encoding='utf8') as sfile:
             sfile.write(f"{label}-{at}\n")
         scraped['labels'].append(f"{label}-{at}")
         return
@@ -249,7 +249,7 @@ def scrapeLabel(driver, label, at):
                     print(f"{at} {addr} already scraped!")
     for thread in threads:
         thread.join()
-    with open('scraped_labels.txt', 'a') as sfile:
+    with open('scraped_labels.txt', 'a', encoding='utf8') as sfile:
         sfile.write(f"{label}-{at}\n")
     scraped['labels'].append(label)
     combineCSVs()
@@ -265,7 +265,7 @@ def main():
     driver = getChromeDriver()
     for x in ['labels', 'accounts', 'tokens']:
         if os.path.isfile(f"scraped_{x}.txt"):
-            with open(f"scraped_{x}.txt") as afile:
+            with open(f"scraped_{x}.txt", encoding='utf8') as afile:
                 scraped[x] = afile.read().splitlines()
         else:
             scraped[x] = []
@@ -304,10 +304,10 @@ def combineCSVs():
     account_rows = []
     for file in os.listdir('CSVs'):
         if file.endswith('-token.csv'):
-            with open(f'./CSVs/{file}') as tfile:
+            with open(f'./CSVs/{file}', encoding='utf8') as tfile:
                 token_rows.extend([x for x in csv.DictReader(tfile)])
         elif file.endswith('-accounts.csv'):
-            with open(f'./CSVs/{file}') as afile:
+            with open(f'./CSVs/{file}', encoding='utf8') as afile:
                 account_rows.extend([x for x in csv.DictReader(afile)])
     print(f"Account rows: {len(account_rows)}")
     print(f"Token rows: {len(token_rows)}")
