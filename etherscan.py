@@ -58,7 +58,8 @@ def getToken(soup, tr):
         data = {
             "Address": tkn,
             "AddressLink": f"https://{es}/address/{tkn}",
-            "Name": soup.find('div', {'class': "media-body"}).find('span').text.strip() if soup.find('div', {'class': "media-body"}) is not None else "",
+            "Name": soup.find('div', {'class': "media-body"}).find('span').text.strip() if soup.find('div', {
+                'class': "media-body"}) is not None else "",
             "Abbreviation": getTag(soup, 'div', {'class': 'col-md-8 font-weight-medium'}).split()[-1],
             "Website": soup.find('div', {"id": 'ContentPlaceHolder1_tr_officialsite_1'}).find('a')['href'],
             "SocialLinks": [{li.find('a')['data-original-title'].split(':')[0]: li.find('a')['href']} for li in
@@ -215,8 +216,11 @@ def scrapeLabel(driver, label, at):
             with open(csv_file, encoding='utf8', newline='') as lfile:
                 for line in csv.DictReader(lfile, fieldnames=fn):
                     lastline = line
-            start = int(lastline['Page'])
-            print(f'Resuming from page {start}')
+            try:
+                start = int(lastline['Page'])
+                print(f'Resuming from page {start}')
+            except:
+                start = 0
         driver.get(f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}&size=100&start=0&order=asc')
         soup = getSoup(driver)
         pageno = soup.find('li', {'class': 'page-item disabled'})
