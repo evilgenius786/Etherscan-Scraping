@@ -25,7 +25,7 @@ data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
 es = "etherscan.io"
 page_url = f'https://{es}/login'
 timeout = 5
-debug = True
+debug = False
 if not os.path.isfile("blocked.txt"):
     with open('blocked.txt', 'w') as bfile:
         bfile.write("\n".join(["eth2-depositor", "gnosis-safe-multisig", "token-contract"]))
@@ -43,7 +43,7 @@ semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 31.0
+version = 32.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
