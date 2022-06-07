@@ -14,7 +14,10 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from urllib3.exceptions import InsecureRequestWarning
 from webdriver_manager.chrome import ChromeDriverManager
+import urllib3
+urllib3.disable_warnings(InsecureRequestWarning)
 
 API_KEY = "05b802522dd0ce9f6cd24b443db4d88a"
 data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
@@ -30,12 +33,12 @@ token_headers = ['Address', 'AddressLink', 'Name', 'Abbreviation', 'Website', 'S
 ac_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', 'Address', 'Name Tag', 'Balance', 'Txn Count']
 tkn_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', '#', 'Contract Address', 'Token Name', 'Market Cap',
             'Holders', 'Website']
-thread_count = 20
+thread_count = 1
 semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 26.0
+version = 27.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -134,6 +137,18 @@ def getAccount(soup, tr):
         # print(soup)
 
 
+def isBusy(soup):
+    if soup.find('title') is not None and "Maintenance Mode" in soup.find('title').text:
+        return True
+    if soup.find('h1') is not None and "Request" == soup.find('h1').text.strip():
+        return True
+    # if "User account suspended" in str(soup):
+    #     checkIp()
+    #     print("Account suspended!")
+    #     return True
+    return False
+
+
 def scrape(driver, tr, at, retry=3):
     try:
         global busy
@@ -150,14 +165,13 @@ def scrape(driver, tr, at, retry=3):
             with semaphore:
                 print(f"Working on {at[:-1]} {addr}")
                 soup = getSession(driver, url)
-
-        if (soup.find('title') is not None and "Maintenance Mode" in soup.find('title').text) or (soup.find('h1') is not None and "Request" == soup.find('h1').text.strip()):
+        if isBusy(soup):
             busy = True
             print(soup.find('title').text.strip())
             with lock:
                 driver.get(url)
                 soup = getSoup(driver)
-                while (soup.find('title') is not None and "Maintenance Mode" in soup.find('title').text) or (soup.find('h1') is not None and "Request" == soup.find('h1').text.strip()):
+                while isBusy(soup):
                     print(soup.find('title').text.strip())
                     busy = True
                     driver.get(url)
@@ -223,7 +237,7 @@ def scrapeLabel(driver, label, at):
                     lastline = line
             try:
                 start = int(lastline['Page'])
-                print(f'Resuming from page {start+1}')
+                print(f'Resuming from page {start + 1}')
             except:
                 start = 0
         driver.get(f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}&size=100&start=0&order=asc')
@@ -234,7 +248,7 @@ def scrapeLabel(driver, label, at):
             print(soup.find('div', {"role": "status"}).text.strip())
             print("Total pages:", pagenos)
             for i in range(start, int(pagenos)):
-                trs=ths=[]
+                trs = ths = []
                 for i in range(3):
                     try:
                         print(f"Working on page#{i + 1}")
@@ -271,8 +285,10 @@ def scrapeLabel(driver, label, at):
                 with open(csv_file, 'a', encoding='utf8', newline='') as lfile:
                     csv.DictWriter(lfile, fieldnames=fn).writerows(rows)
     threads = []
-    with open(csv_file, 'r',encoding='utf8') as cfile:
-        for tr in csv.DictReader(cfile, fieldnames=fn):
+    with open(csv_file, 'r', encoding='utf8') as cfile:
+        x = csv.DictReader(cfile, fieldnames=fn)
+        next(x)
+        for tr in x:
             if at == 'accounts' or at == 'tokens':
                 addr = tr['Address'] if at == 'accounts' else tr['Contract Address']
                 if addr not in scraped[at]:
@@ -282,6 +298,7 @@ def scrapeLabel(driver, label, at):
                     time.sleep(0.1)
                 else:
                     print(f"{at} {addr} already scraped!")
+                    scraped[at].append(addr)
     for thread in threads:
         thread.join()
     with open('scraped_labels.txt', 'a', encoding='utf8') as sfile:
@@ -428,7 +445,11 @@ def getSession(driver, url):
     }
     for cookie in driver.get_cookies():
         s.cookies.set(cookie['name'], cookie['value'])
-    return BeautifulSoup(s.get(url, proxies=proxies, verify='zyte-proxy-ca.crt').content, 'lxml')
+    return BeautifulSoup(s.get(url,
+                               # proxies=proxies,
+                               # verify='zyte-proxy-ca.crt',
+                               verify=False,
+                               ).content, 'lxml')
 
 
 def logo():
@@ -497,7 +518,9 @@ def checkToken():
 
 
 def checkIp():
-    res = requests.get('http://lumtest.com/myip.json', proxies=proxies)
+    res = requests.get('http://lumtest.com/myip.json',
+                       proxies=proxies
+                       )
     print(res.json())
 
 
