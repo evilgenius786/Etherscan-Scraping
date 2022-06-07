@@ -43,7 +43,7 @@ semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 30.0
+version = 31.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -546,7 +546,7 @@ def checkIp():
     res = requests.get('http://lumtest.com/myip.json',
                        proxies=proxies
                        )
-    print(res.text)
+    print("Lumtest",res.text)
 
 
 cert = """-----BEGIN CERTIFICATE-----
@@ -575,5 +575,5 @@ xAzDdjEIB/tf1cE0SQ+5sdmepO1cIjQYVSL7U+br+y9A1J9N+FYkBKVevM/W25tb
 iGWBe46djkdm/6eyQ7gtuxhby5lwtRl5sIm9/ID/vWWDMf8O4GPPnW/Xug==
 -----END CERTIFICATE-----"""
 if __name__ == '__main__':
-    # main()
-    checkIp()
+    main()
+    # checkIp()
