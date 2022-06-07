@@ -385,7 +385,7 @@ def getChromeDriver():
     if os.name != 'nt':
         chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(
-        # service=Service(ChromeDriverManager().install()),
+        service=Service(ChromeDriverManager().install()),
         options=chrome_options)
     return driver
 
