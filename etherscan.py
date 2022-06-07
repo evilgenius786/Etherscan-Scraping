@@ -43,7 +43,7 @@ semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 29.0
+version = 30.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -170,7 +170,15 @@ def scrape(driver, tr, at, retry=3):
             with semaphore:
                 print(f"Working on {at[:-1]} {addr}")
                 soup = getSession(driver, url)
-        if isBusy(soup):
+        if "User account suspended" in str(soup):
+            checkIp()
+            # print("Account suspended!")
+            with lock:
+                busy = True
+                print(f"Processing via browser {url}")
+                driver.get(url)
+                soup = getSoup(driver)
+        elif isBusy(soup):
             busy = True
             print(soup.find('title').text.strip())
             with lock:
@@ -237,15 +245,18 @@ def scrapeLabel(driver, label, at):
             with open(csv_file, 'w', encoding='utf8', newline='') as lfile:
                 csv.DictWriter(lfile, fieldnames=fn).writeheader()
         else:
-            lastline = {}
+            start = 0
             with open(csv_file, encoding='utf8', newline='') as lfile:
-                for line in csv.DictReader(lfile, fieldnames=fn):
-                    lastline = line
-            try:
-                print(f'Resuming from page {lastline["Page"]}')
-                start = int(lastline['Page'])
-            except:
-                start = 0
+                fl = csv.DictReader(lfile, fieldnames=fn)
+                next(fl)
+                for line in fl:
+                    try:
+                        page = int(line['Page'])+1
+                        if page > start:
+                            start = page
+                    except:
+                        traceback.print_exc()
+            print(f'Resuming from page {start}')
         driver.get(f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}&size=100&start=0&order=asc')
         soup = getSoup(driver)
         pageno = soup.find('li', {'class': 'page-item disabled'})
@@ -343,7 +354,7 @@ def main():
     ]
     print(f"Found {len(divs)} labels.")
     try:
-        for div in divs:
+        for div in divs[524:]:
             label = div.find('button')['data-url']
             for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
                 if at.lower() in ['accounts', 'tokens']:
@@ -385,13 +396,21 @@ def getChromeDriver():
     chrome_options.add_argument(f'user-agent={UserAgent().random}')
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
+    if debug:
+        # print("Connecting existing Chrome for debugging...")
+        chrome_options.debugger_address = "127.0.0.1:9222"
     # chrome_options.add_argument("--blink-settings=imagesEnabled=false")
     chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
     if os.name != 'nt':
         chrome_options.add_argument("--headless")
-    driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
-        options=chrome_options)
+    if os.path.isfile('chromedriver.exe'):
+        driver = webdriver.Chrome(
+            # service=Service(ChromeDriverManager().install()),
+            options=chrome_options)
+    else:
+        driver = webdriver.Chrome(
+            service=Service(ChromeDriverManager().install()),
+            options=chrome_options)
     return driver
 
 
@@ -527,7 +546,7 @@ def checkIp():
     res = requests.get('http://lumtest.com/myip.json',
                        proxies=proxies
                        )
-    print(res.json())
+    print(res.text)
 
 
 cert = """-----BEGIN CERTIFICATE-----
@@ -556,4 +575,5 @@ xAzDdjEIB/tf1cE0SQ+5sdmepO1cIjQYVSL7U+br+y9A1J9N+FYkBKVevM/W25tb
 iGWBe46djkdm/6eyQ7gtuxhby5lwtRl5sIm9/ID/vWWDMf8O4GPPnW/Xug==
 -----END CERTIFICATE-----"""
 if __name__ == '__main__':
-    main()
+    # main()
+    checkIp()
