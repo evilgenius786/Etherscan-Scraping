@@ -87,6 +87,8 @@ def getToken(soup, tr):
             sfile.write(tkn + "\n")
         scraped['tokens'].append(tkn)
     except:
+        print(soup)
+        print(f"Error on token {tkn}")
         traceback.print_exc()
         with open('Error-Token.txt', 'a', encoding='utf8') as efile:
             efile.write(f"{tkn}\n")
@@ -124,6 +126,8 @@ def getAccount(soup, tr):
             sfile.write(addr + "\n")
         scraped['accounts'].append(addr)
     except:
+        print(soup)
+        print(f"Error on account {addr}")
         traceback.print_exc()
         with open('Error-Account.txt', 'a', encoding='utf8') as efile:
             efile.write(f"{addr}\n")
@@ -146,6 +150,7 @@ def scrape(driver, tr, at, retry=3):
             with semaphore:
                 print(f"Working on {at[:-1]} {addr}")
                 soup = getSession(driver, url)
+
         if (soup.find('title') is not None and "Maintenance Mode" in soup.find('title').text) or (soup.find('h1') is not None and "Request" == soup.find('h1').text.strip()):
             busy = True
             print(soup.find('title').text.strip())
@@ -229,7 +234,8 @@ def scrapeLabel(driver, label, at):
             print(soup.find('div', {"role": "status"}).text.strip())
             print("Total pages:", pagenos)
             for i in range(start, int(pagenos)):
-                while True:
+                trs=ths=[]
+                for i in range(3):
                     try:
                         print(f"Working on page#{i + 1}")
                         t_url = f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}' \
@@ -265,7 +271,7 @@ def scrapeLabel(driver, label, at):
                 with open(csv_file, 'a', encoding='utf8', newline='') as lfile:
                     csv.DictWriter(lfile, fieldnames=fn).writerows(rows)
     threads = []
-    with open(csv_file, 'r') as cfile:
+    with open(csv_file, 'r',encoding='utf8') as cfile:
         for tr in csv.DictReader(cfile, fieldnames=fn):
             if at == 'accounts' or at == 'tokens':
                 addr = tr['Address'] if at == 'accounts' else tr['Contract Address']
