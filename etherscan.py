@@ -242,8 +242,8 @@ def scrapeLabel(driver, label, at):
                 for line in csv.DictReader(lfile, fieldnames=fn):
                     lastline = line
             try:
+                print(f'Resuming from page {lastline["Page"]}')
                 start = int(lastline['Page'])
-                print(f'Resuming from page {start + 1}')
             except:
                 start = 0
         driver.get(f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}&size=100&start=0&order=asc')
