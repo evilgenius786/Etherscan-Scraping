@@ -24,7 +24,7 @@ data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
 es = "etherscan.io"
 page_url = f'https://{es}/login'
 timeout = 5
-debug = False
+debug = True
 blocked = ["eth2-depositor"]
 account_headers = ['Address', 'Name Tag', 'Name Tag URL', 'AddressLink', 'AddressType', 'LabelIDs',
                    'Subcategory', 'Time']
@@ -33,12 +33,12 @@ token_headers = ['Address', 'AddressLink', 'Name', 'Abbreviation', 'Website', 'S
 ac_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', 'Address', 'Name Tag', 'Balance', 'Txn Count']
 tkn_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', '#', 'Contract Address', 'Token Name', 'Market Cap',
             'Holders', 'Website']
-thread_count = 1
+thread_count = 20
 semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 27.0
+version = 28.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -169,6 +169,7 @@ def scrape(driver, tr, at, retry=3):
             busy = True
             print(soup.find('title').text.strip())
             with lock:
+                print(f"Processing via browser {url}")
                 driver.get(url)
                 soup = getSoup(driver)
                 while isBusy(soup):
@@ -249,7 +250,7 @@ def scrapeLabel(driver, label, at):
             print("Total pages:", pagenos)
             for i in range(start, int(pagenos)):
                 trs = ths = []
-                for i in range(3):
+                for _ in range(3):
                     try:
                         print(f"Working on page#{i + 1}")
                         t_url = f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}' \
@@ -384,7 +385,7 @@ def getChromeDriver():
     if os.name != 'nt':
         chrome_options.add_argument("--headless")
     driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
+        # service=Service(ChromeDriverManager().install()),
         options=chrome_options)
     return driver
 
@@ -446,9 +447,9 @@ def getSession(driver, url):
     for cookie in driver.get_cookies():
         s.cookies.set(cookie['name'], cookie['value'])
     return BeautifulSoup(s.get(url,
-                               # proxies=proxies,
-                               # verify='zyte-proxy-ca.crt',
-                               verify=False,
+                               proxies=proxies,
+                               verify='zyte-proxy-ca.crt',
+                               # verify=False,
                                ).content, 'lxml')
 
 
