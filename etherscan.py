@@ -17,6 +17,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from urllib3.exceptions import InsecureRequestWarning
 from webdriver_manager.chrome import ChromeDriverManager
 import urllib3
+
 urllib3.disable_warnings(InsecureRequestWarning)
 
 API_KEY = "05b802522dd0ce9f6cd24b443db4d88a"
@@ -25,7 +26,11 @@ es = "etherscan.io"
 page_url = f'https://{es}/login'
 timeout = 5
 debug = True
-blocked = ["eth2-depositor"]
+if not os.path.isfile("blocked.txt"):
+    with open('blocked.txt', 'w') as bfile:
+        bfile.write("\n".join(["eth2-depositor", "gnosis-safe-multisig", "token-contract"]))
+with open('blocked.txt', 'r') as bfile:
+    blocked = bfile.read().splitlines()
 account_headers = ['Address', 'Name Tag', 'Name Tag URL', 'AddressLink', 'AddressType', 'LabelIDs',
                    'Subcategory', 'Time']
 token_headers = ['Address', 'AddressLink', 'Name', 'Abbreviation', 'Website', 'SocialLinks', 'Image', 'LabelIDs',
