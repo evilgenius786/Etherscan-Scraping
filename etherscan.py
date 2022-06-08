@@ -25,7 +25,7 @@ data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
 es = "etherscan.io"
 page_url = f'https://{es}/login'
 timeout = 5
-debug = False
+debug = os.path.isfile('chromedriver.exe')
 if not os.path.isfile("blocked.txt"):
     with open('blocked.txt', 'w') as bfile:
         bfile.write("\n".join(["eth2-depositor", "gnosis-safe-multisig", "token-contract"]))
@@ -339,12 +339,12 @@ def main():
         else:
             scraped[x] = []
         print(f"Scraped {x}: {len(scraped[x])}")
-    if not debug:
-        reCaptchaSolver(driver)
     for d in ['CSVs', 'labelcloud']:
         if not os.path.isdir(d):
             os.mkdir(d)
-    driver.get(f'https://{es}/labelcloud')
+    if not debug:
+        reCaptchaSolver(driver)
+        driver.get(f'https://{es}/labelcloud')
     btnclass = 'col-md-4 col-lg-3 mb-3 secondary-container'
     getElement(driver, f'//div[@class="{btnclass}"]')
     soup = getSoup(driver)
@@ -352,9 +352,13 @@ def main():
         x for x in soup.find_all('div', {'class': btnclass})
         if x.find('button')['data-url'] not in blocked
     ]
+
     print(f"Found {len(divs)} labels.")
+    if debug:
+        input("Done")
+
     try:
-        for div in divs[524:]:
+        for div in divs:
             label = div.find('button')['data-url']
             for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
                 if at.lower() in ['accounts', 'tokens']:
@@ -396,7 +400,7 @@ def getChromeDriver():
     chrome_options.add_argument(f'user-agent={UserAgent().random}')
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
-    if debug:
+    if debug and os.path.isfile('chromedriver.exe'):
         # print("Connecting existing Chrome for debugging...")
         chrome_options.debugger_address = "127.0.0.1:9222"
     # chrome_options.add_argument("--blink-settings=imagesEnabled=false")
