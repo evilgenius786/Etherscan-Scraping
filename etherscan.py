@@ -43,7 +43,7 @@ semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 32.0
+version = 33.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
@@ -251,7 +251,7 @@ def scrapeLabel(driver, label, at):
                 next(fl)
                 for line in fl:
                     try:
-                        page = int(line['Page'])+1
+                        page = int(line['Page']) + 1
                         if page > start:
                             start = page
                     except:
@@ -332,13 +332,7 @@ def main():
         with open('zyte-proxy-ca.crt', 'w') as zfile:
             zfile.write(cert)
     driver = getChromeDriver()
-    for x in ['labels', 'accounts', 'tokens']:
-        if os.path.isfile(f"scraped_{x}.txt"):
-            with open(f"scraped_{x}.txt", encoding='utf8') as afile:
-                scraped[x] = afile.read().splitlines()
-        else:
-            scraped[x] = []
-        print(f"Scraped {x}: {len(scraped[x])}")
+
     for d in ['CSVs', 'labelcloud']:
         if not os.path.isdir(d):
             os.mkdir(d)
@@ -352,11 +346,30 @@ def main():
         x for x in soup.find_all('div', {'class': btnclass})
         if x.find('button')['data-url'] not in blocked
     ]
-
-    print(f"Found {len(divs)} labels.")
-    if debug:
-        input("Done")
-
+    data = {"total_accounts": 0, "total_tokens": 0, "total_labels": len(divs)}
+    for x in ['labels', 'accounts', 'tokens']:
+        if os.path.isfile(f"scraped_{x}.txt"):
+            with open(f"scraped_{x}.txt", encoding='utf8') as afile:
+                scraped[x] = afile.read().splitlines()
+        else:
+            scraped[x] = []
+        data[f'scraped_{x}'] = len(scraped[x])
+    for div in divs:
+        for a in [ahref.text.lower() for ahref in div.find_all('a')]:
+            if 'account' in a:
+                try:
+                    data["total_accounts"] += int(a.split('(')[1].split(')')[0])
+                except:
+                    traceback.print_exc()
+            elif 'token' in a:
+                try:
+                    data["total_tokens"] += int(a.split('(')[1].split(')')[0])
+                except:
+                    traceback.print_exc()
+    for d in ['accounts', 'tokens', 'labels']:
+        data[f'left_{d}'] = data[f'total_{d}'] - data[f'scraped_{d}']
+    print(json.dumps(data, indent=4))
+    time.sleep(2)
     try:
         for div in divs:
             label = div.find('button')['data-url']
@@ -550,7 +563,7 @@ def checkIp():
     res = requests.get('http://lumtest.com/myip.json',
                        proxies=proxies
                        )
-    print("Lumtest",res.text)
+    print("Lumtest", res.text)
 
 
 cert = """-----BEGIN CERTIFICATE-----
