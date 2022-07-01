@@ -43,13 +43,15 @@ semaphore = threading.Semaphore(thread_count)
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 33.0
+version = 34.0
 proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
 proxies = {
     "http": proxy,
     "https": proxy,
 }
-
+# def processCSV():
+#     for at in ['Account','Token']:
+        
 
 def getToken(soup, tr):
     tkn = tr['Contract Address']
@@ -145,7 +147,7 @@ def getAccount(soup, tr):
 def isBusy(soup):
     if soup.find('title') is not None and "Maintenance Mode" in soup.find('title').text:
         return True
-    if soup.find('h1') is not None and "Request" == soup.find('h1').text.strip():
+    if soup.find('h1') is not None and "request" in soup.find('h1').text.strip().lower():
         return True
     # if "User account suspended" in str(soup):
     #     checkIp()
