@@ -71,7 +71,7 @@ def getToken(soup, tr):
             "Name": soup.find('div', {'class': "media-body"}).find('span').text.strip() if soup.find('div', {
                 'class': "media-body"}) is not None else "",
             "Abbreviation": getTag(soup, 'div', {'class': 'col-md-8 font-weight-medium'}).split()[-1],
-            "Website": soup.find('div', {"id": 'ContentPlaceHolder1_tr_officialsite_1'}).find('a')['href'],
+            "Website": soup.find('div', {"id": 'ContentPlaceHolder1_tr_officialsite_1'}).find('a')['href'] if soup.find('div', {"id": 'ContentPlaceHolder1_tr_officialsite_1'}) is not None else "",
             "SocialLinks": [{li.find('a')['data-original-title'].split(':')[0]: li.find('a')['href']} for li in
                             soup.find_all('li', {"class": "list-inline-item mr-3"})],
             "Image": f"https://{es}/{soup.find('img', {'class': 'u-sm-avatar mr-2'})['src']}",
@@ -550,7 +550,7 @@ def checkAccount():
 def checkToken():
     s = requests.Session()
     s.headers = {'user-agent': 'Mozilla/5.0'}
-    adrs = '0x87d73E916D7057945c9BcD8cdd94e42A6F47f776'
+    adrs = '0x41f723448433367be140d528d35efecd3e023db6'
     soup = BeautifulSoup(s.get(f'https://{es}/token/{adrs}').content, 'lxml')
     tk_data = {
         'Contract Address': adrs,
@@ -594,5 +594,6 @@ xAzDdjEIB/tf1cE0SQ+5sdmepO1cIjQYVSL7U+br+y9A1J9N+FYkBKVevM/W25tb
 iGWBe46djkdm/6eyQ7gtuxhby5lwtRl5sIm9/ID/vWWDMf8O4GPPnW/Xug==
 -----END CERTIFICATE-----"""
 if __name__ == '__main__':
-    main()
+    checkToken()
+    # main()
     # checkIp()
