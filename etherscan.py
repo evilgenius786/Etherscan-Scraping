@@ -594,6 +594,6 @@ xAzDdjEIB/tf1cE0SQ+5sdmepO1cIjQYVSL7U+br+y9A1J9N+FYkBKVevM/W25tb
 iGWBe46djkdm/6eyQ7gtuxhby5lwtRl5sIm9/ID/vWWDMf8O4GPPnW/Xug==
 -----END CERTIFICATE-----"""
 if __name__ == '__main__':
-    checkToken()
-    # main()
+    # checkToken()
+    main()
     # checkIp()
