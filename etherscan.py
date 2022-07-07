@@ -19,8 +19,14 @@ from webdriver_manager.chrome import ChromeDriverManager
 import urllib3
 
 urllib3.disable_warnings(InsecureRequestWarning)
+if os.path.isfile('2captcha.txt'):
+    with open('2captcha.txt', 'r', encoding='utf8') as f:
+        API_KEY = f.read().strip()
+else:
+    API_KEY = input("Enter 2captcha API key: ")
+    with open('2captcha.txt', 'w', encoding='utf8') as f:
+        f.write(API_KEY)
 
-API_KEY = "05b802522dd0ce9f6cd24b443db4d88a"
 data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
 es = "etherscan.io"
 page_url = f'https://{es}/login'
