@@ -1,4 +1,5 @@
 import csv
+import datetime
 import json
 import os
 import random
@@ -330,7 +331,7 @@ def scrapeLabel(driver, label, at):
                     threads.append(thread)
                     time.sleep(0.1)
                     while running_threads > 100:
-                        print('Waiting for threads to finish...')
+                        print(datetime.datetime.now(), f'Waiting for threads ({running_threads}) to finish...')
                         time.sleep(10)
                 else:
                     print(f"{at} {addr} already scraped!")
