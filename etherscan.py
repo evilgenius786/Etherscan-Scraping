@@ -46,6 +46,7 @@ tkn_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', '#', 'Contract Address
             'Holders', 'Website']
 thread_count = 20
 semaphore = threading.Semaphore(thread_count)
+running_threads = 0
 lock = threading.Lock()
 busy = False
 scraped = {}
@@ -55,9 +56,11 @@ proxies = {
     "http": proxy,
     "https": proxy,
 }
+
+
 # def processCSV():
 #     for at in ['Account','Token']:
-        
+
 
 def getToken(soup, tr):
     tkn = tr['Contract Address']
@@ -77,7 +80,8 @@ def getToken(soup, tr):
             "Name": soup.find('div', {'class': "media-body"}).find('span').text.strip() if soup.find('div', {
                 'class': "media-body"}) is not None else "",
             "Abbreviation": getTag(soup, 'div', {'class': 'col-md-8 font-weight-medium'}).split()[-1],
-            "Website": soup.find('div', {"id": 'ContentPlaceHolder1_tr_officialsite_1'}).find('a')['href'] if soup.find('div', {"id": 'ContentPlaceHolder1_tr_officialsite_1'}) is not None else "",
+            "Website": soup.find('div', {"id": 'ContentPlaceHolder1_tr_officialsite_1'}).find('a')['href'] if soup.find(
+                'div', {"id": 'ContentPlaceHolder1_tr_officialsite_1'}) is not None else "",
             "SocialLinks": [{li.find('a')['data-original-title'].split(':')[0]: li.find('a')['href']} for li in
                             soup.find_all('li', {"class": "list-inline-item mr-3"})],
             "Image": f"https://{es}/{soup.find('img', {'class': 'u-sm-avatar mr-2'})['src']}",
@@ -163,6 +167,7 @@ def isBusy(soup):
 
 
 def scrape(driver, tr, at, retry=3):
+    global running_threads
     try:
         global busy
         while busy:
@@ -204,6 +209,7 @@ def scrape(driver, tr, at, retry=3):
             getToken(soup, tr)
         else:
             getAccount(soup, tr)
+        running_threads -= 1
     except:
         if retry > 0:
             scrape(driver, tr, at, retry - 1)
@@ -213,6 +219,7 @@ def scrape(driver, tr, at, retry=3):
 
 
 def scrapeLabel(driver, label, at):
+    global running_threads
     print(f"Working on label {label} ({at})")
     driver.get(f'https://{es}/{at}/label/{label}?subcatid=undefined&size=100&start=0&order=asc')
     fn = tkn_hdrs if at == "tokens" else ac_hdrs
@@ -319,11 +326,12 @@ def scrapeLabel(driver, label, at):
                 if addr not in scraped[at]:
                     thread = threading.Thread(target=scrape, args=(driver, tr, at,))
                     thread.start()
+                    running_threads += 1
                     threads.append(thread)
                     time.sleep(0.1)
-                    while len(threads) > 100:
+                    while running_threads > 100:
                         print('Waiting for threads to finish...')
-                        time.sleep(1)
+                        time.sleep(10)
                 else:
                     print(f"{at} {addr} already scraped!")
                     scraped[at].append(addr)
