@@ -127,7 +127,7 @@ def getAccount(soup, tr):
             "Name Tag": tag.text if tag is not None else tr['Name Tag'],
             "Address": addr,
             "AddressLink": f"https://{es}/address/{addr}",
-            "AddressType": soup.find('h1').text.strip().split()[0],
+            "AddressType": soup.find('h1').text.strip().split()[0] if soup.find('h1') is not None else "",
             "Name Tag URL": tag.parent.find('a')[
                 'href'] if tag is not None and tag.parent is not None and tag.parent.find('a') is not None else "",
             "LabelIDs": [a.text for a in soup.find_all('div', {'class': 'mt-1'})[1].find_all('a') if
