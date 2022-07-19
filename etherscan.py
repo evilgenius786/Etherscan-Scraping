@@ -51,7 +51,7 @@ running_threads = 0
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 1.0
+version = 2.0
 
 if os.path.isfile('proxy.txt'):
     with open('proxy.txt', 'r', encoding='utf8') as f:
