@@ -51,7 +51,7 @@ running_threads = 0
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 3.0
+version = 4.0
 
 if os.path.isfile('proxy.txt'):
     with open('proxy.txt', 'r', encoding='utf8') as f:
@@ -112,7 +112,7 @@ def getToken(soup, tr):
                 csv.DictWriter(file, fieldnames=token_headers).writeheader()
         with open(filename, 'a', newline='', encoding='utf8') as file:
             csv.DictWriter(file, fieldnames=token_headers).writerow(data)
-        with open('scraped_tokens.txt', 'a', encoding='utf8') as sfile:
+        with open('ScrapedTokens.txt', 'a', encoding='utf8') as sfile:
             sfile.write(tkn + "\n")
         scraped['tokens'].append(tkn)
     except:
@@ -151,7 +151,7 @@ def getAccount(soup, tr):
                 csv.DictWriter(file, fieldnames=account_headers).writeheader()
         with open(filename, 'a', newline='', encoding='utf8') as file:
             csv.DictWriter(file, fieldnames=account_headers).writerow(data)
-        with open('scraped_accounts.txt', 'a', encoding='utf8') as sfile:
+        with open('ScrapedAccounts.txt', 'a', encoding='utf8') as sfile:
             sfile.write(addr + "\n")
         scraped['accounts'].append(addr)
     except:
@@ -255,9 +255,6 @@ def scrapeLabel(driver, label, at):
         pprint(f"No {at} found!")
         with open(f'not-found-{at}.txt', 'a') as nfile:
             nfile.write(f'{label}\n')
-        # with open('scraped_labels.txt', 'a', encoding='utf8') as sfile:
-        #     sfile.write(f"{label}-{at}\n")
-        # scraped['labels'].append(f"{label}-{at}")
         return
     soup = getSoup(driver)
     ul = soup.find('ul', {"class": "nav nav-custom nav-borderless nav_tabs"})
@@ -357,7 +354,7 @@ def scrapeLabel(driver, label, at):
                     scraped[at].append(addr)
     for thread in threads:
         thread.join()
-    with open('scraped_labels.txt', 'a', encoding='utf8') as sfile:
+    with open('ScrapedLabels.txt', 'a', encoding='utf8') as sfile:
         sfile.write(f"{label}-{at}\n")
     scraped['labels'].append(label)
     combineCSVs()
