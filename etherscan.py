@@ -159,7 +159,7 @@ def getAccount(soup, tr):
 
 def pprint(msg):
     m = f"{datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')} | {msg}\n"
-    print(m)
+    print(m.strip())
     logfile.write(m)
     logfile.flush()
 
