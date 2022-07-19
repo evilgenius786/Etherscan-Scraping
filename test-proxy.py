@@ -17,6 +17,7 @@ proxies = {
 }
 # url="https://httpbin.org/ip"
 url='https://lumtest.com/myip.json'
+print(proxy)
 res = requests.get(url, proxies=proxies,
                    verify='zyte-proxy-ca.crt'
                    )

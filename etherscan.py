@@ -252,6 +252,7 @@ def scrapeLabel(driver, label, at):
     try:
         getElement(driver, '//tr[@class="odd"]')
     except:
+        traceback.print_exc()
         pprint(f"No {at} found!")
         with open('scraped_labels.txt', 'a', encoding='utf8') as sfile:
             sfile.write(f"{label}-{at}\n")
