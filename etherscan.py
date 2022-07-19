@@ -51,7 +51,7 @@ running_threads = 0
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 34.0
+version = 1.0
 
 if os.path.isfile('proxy.txt'):
     with open('proxy.txt', 'r', encoding='utf8') as f:
@@ -387,15 +387,15 @@ def main():
     ]
     data = {"total_accounts": 0, "total_tokens": 0, "total_labels": len(divs)}
     for x in ['Labels', 'Accounts', 'Tokens']:
-        scraped[x] = []
+        scraped[x.lower()] = []
         if os.path.isfile(f"Scraped{x}Master.txt"):
             with open(f"Scraped{x}.txt", encoding='utf8') as afile:
-                scraped[x] = afile.read().splitlines()
+                scraped[x.lower()] = afile.read().splitlines()
         if os.path.isfile(f"{x}Master.csv") and x != 'Labels':
             with open(f"{x}Master.csv",encoding='utf8') as masterfile:
                 fn = account_headers if x == 'Accounts' else token_headers
                 for line in csv.DictReader(masterfile, fieldnames=fn):
-                    scraped[x].append(line['Address'])
+                    scraped[x.lower()].append(line['Address'])
         data[f'scraped_{x}'] = len(scraped[x])
     for div in divs:
         for a in [ahref.text.lower() for ahref in div.find_all('a')]:
