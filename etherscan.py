@@ -35,7 +35,7 @@ timeout = 5
 debug = os.path.isfile('chromedriver.exe')
 if not os.path.isfile("blocked.txt"):
     with open('blocked.txt', 'w') as bfile:
-        bfile.write("\n".join(["eth2-depositor", "gnosis-safe-multisig", "token-contract"]))
+        bfile.write("")
 with open('blocked.txt', 'r') as bfile:
     blocked = bfile.read().splitlines()
 account_headers = ['Address', 'Name Tag', 'Name Tag URL', 'AddressLink', 'AddressType', 'LabelIDs',
