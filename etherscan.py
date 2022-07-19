@@ -241,8 +241,7 @@ def scrapeLabel(driver, label, at):
     pprint(f"Working on label {label} ({at})")
     driver.get(f'https://{es}/{at}/label/{label}?subcatid=undefined&size=100&start=0&order=asc')
     fn = tkn_hdrs if at == "tokens" else ac_hdrs
-
-    for i in range(2):
+    for i in range(4):
         try:
             pprint("Fetching rows...")
             getElement(driver, '//tr[@class="odd"]')
@@ -254,9 +253,11 @@ def scrapeLabel(driver, label, at):
     except:
         traceback.print_exc()
         pprint(f"No {at} found!")
-        with open('scraped_labels.txt', 'a', encoding='utf8') as sfile:
-            sfile.write(f"{label}-{at}\n")
-        scraped['labels'].append(f"{label}-{at}")
+        with open(f'not-found-{at}.txt', 'a') as nfile:
+            nfile.write(f'{label}\n')
+        # with open('scraped_labels.txt', 'a', encoding='utf8') as sfile:
+        #     sfile.write(f"{label}-{at}\n")
+        # scraped['labels'].append(f"{label}-{at}")
         return
     soup = getSoup(driver)
     ul = soup.find('ul', {"class": "nav nav-custom nav-borderless nav_tabs"})
