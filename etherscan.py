@@ -58,9 +58,11 @@ proxies = {
     "https": proxy,
 }
 
-
 # def processCSV():
 #     for at in ['Account','Token']:
+if not os.path.isdir('logs'):
+    os.mkdir('logs')
+logfile = open(f'./logs/log-{datetime.datetime.now().strftime("%d-%m-%y--%H-%M-%S")}.txt', 'w', encoding='utf8')
 
 
 def getToken(soup, tr):
@@ -155,12 +157,10 @@ def getAccount(soup, tr):
         # pprint(soup)
 
 
-logfile = open(f'log-{datetime.datetime.now().strftime("%d-%m-%y--%H-%M-%S")}.txt', 'w', encoding='utf8')
-
-
 def pprint(msg):
-    print(datetime.datetime.now(), msg)
-    logfile.write(f"{datetime.datetime.now()} {msg}\n")
+    m = f"{datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')} | {msg}\n"
+    print(m)
+    logfile.write(m)
     logfile.flush()
 
 
@@ -169,8 +169,8 @@ def isBusy(soup):
         pprint(f"Maintenance Mode {soup.find('title').text}")
         return True
     # if soup.find('h1') is not None:
-        # and "request" in soup.find('h1').text.strip().lower()):
-        # return True
+    # and "request" in soup.find('h1').text.strip().lower()):
+    # return True
     # if "User account suspended" in str(soup):
     #     checkIp()
     #     pprint("Account suspended!")
