@@ -167,9 +167,9 @@ def isBusy(soup):
     if soup.find('title') is not None and "Maintenance Mode" in soup.find('title').text:
         pprint(f"Maintenance Mode {soup.find('title').text}")
         return True
-    if soup.find('h1') is not None:
+    # if soup.find('h1') is not None:
         # and "request" in soup.find('h1').text.strip().lower()):
-        return True
+        # return True
     # if "User account suspended" in str(soup):
     #     checkIp()
     #     pprint("Account suspended!")
