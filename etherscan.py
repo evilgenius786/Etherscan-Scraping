@@ -396,7 +396,7 @@ def main():
                 fn = account_headers if x == 'Accounts' else token_headers
                 for line in csv.DictReader(masterfile, fieldnames=fn):
                     scraped[x.lower()].append(line['Address'])
-        data[f'scraped_{x}'] = len(scraped[x])
+        data[f'scraped_{x}'] = len(scraped[x.lower()])
     for div in divs:
         for a in [ahref.text.lower() for ahref in div.find_all('a')]:
             if 'account' in a:
