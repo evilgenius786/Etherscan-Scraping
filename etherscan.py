@@ -386,12 +386,16 @@ def main():
         if x.find('button')['data-url'] not in blocked
     ]
     data = {"total_accounts": 0, "total_tokens": 0, "total_labels": len(divs)}
-    for x in ['labels', 'accounts', 'tokens']:
-        if os.path.isfile(f"scraped_{x}.txt"):
-            with open(f"scraped_{x}.txt", encoding='utf8') as afile:
+    for x in ['Labels', 'Accounts', 'Tokens']:
+        scraped[x] = []
+        if os.path.isfile(f"Scraped{x}Master.txt"):
+            with open(f"Scraped{x}.txt", encoding='utf8') as afile:
                 scraped[x] = afile.read().splitlines()
-        else:
-            scraped[x] = []
+        if os.path.isfile(f"{x}Master.csv") and x != 'Labels':
+            with open(f"{x}Master.csv",encoding='utf8') as masterfile:
+                fn = account_headers if x == 'Accounts' else token_headers
+                for line in csv.DictReader(masterfile, fieldnames=fn):
+                    scraped[x].append(line['Address'])
         data[f'scraped_{x}'] = len(scraped[x])
     for div in divs:
         for a in [ahref.text.lower() for ahref in div.find_all('a')]:
@@ -406,6 +410,7 @@ def main():
                 except:
                     traceback.print_exc()
     for d in ['accounts', 'tokens', 'labels']:
+        data[f'left_{d}'] = data[f'total_{d}'] - data[f'scraped_{d}']
         data[f'left_{d}'] = data[f'total_{d}'] - data[f'scraped_{d}']
     pprint(json.dumps(data, indent=4))
     time.sleep(2)
