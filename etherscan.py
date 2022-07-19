@@ -32,7 +32,7 @@ data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
 es = "etherscan.io"
 page_url = f'https://{es}/login'
 timeout = 5
-debug = os.path.isfile('chromedriver.exe')
+debug = False  # os.path.isfile('chromedriver.exe')
 if not os.path.isfile("blocked.txt"):
     with open('blocked.txt', 'w') as bfile:
         bfile.write("")
@@ -53,9 +53,8 @@ busy = False
 scraped = {}
 version = 34.0
 
-
 if os.path.isfile('proxy.txt'):
-    with open('2captcha.txt', 'r', encoding='utf8') as f:
+    with open('proxy.txt', 'r', encoding='utf8') as f:
         proxy = f.read().strip()
 else:
     proxy = input("Enter proxy endpoint (http://username:password@ip:port): ")
