@@ -52,12 +52,19 @@ lock = threading.Lock()
 busy = False
 scraped = {}
 version = 34.0
-proxy = "http://ac5a4cbb84ae4ec1907dfc3a38284ca4:@proxy.crawlera.com:8011"
+
+
+if os.path.isfile('proxy.txt'):
+    with open('2captcha.txt', 'r', encoding='utf8') as f:
+        proxy = f.read().strip()
+else:
+    proxy = input("Enter proxy endpoint (http://username:password@ip:port): ")
+    with open('proxy.txt', 'w', encoding='utf8') as f:
+        f.write(proxy)
 proxies = {
     "http": proxy,
     "https": proxy,
 }
-
 # def processCSV():
 #     for at in ['Account','Token']:
 if not os.path.isdir('logs'):
