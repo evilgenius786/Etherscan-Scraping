@@ -156,7 +156,7 @@ def getAccount(soup, tr):
 
 
 logfile = open(f'log-{datetime.datetime.now().strftime("%d-%m-%y %H-%M-%S")}.txt', 'w', encoding='utf8')
-v
+
 
 def pprint(msg):
     print(datetime.datetime.now(), msg)
