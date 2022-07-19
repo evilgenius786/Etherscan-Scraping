@@ -51,7 +51,7 @@ running_threads = 0
 lock = threading.Lock()
 busy = False
 scraped = {}
-version = 2.0
+version = 3.0
 
 if os.path.isfile('proxy.txt'):
     with open('proxy.txt', 'r', encoding='utf8') as f:
@@ -396,6 +396,7 @@ def main():
                 fn = account_headers if x == 'Accounts' else token_headers
                 for line in csv.DictReader(masterfile, fieldnames=fn):
                     scraped[x.lower()].append(line['Address'])
+        scraped[x.lower()] = list(set(scraped[x.lower()]))
         data[f'scraped_{x.lower()}'] = len(scraped[x.lower()])
     for div in divs:
         for a in [ahref.text.lower() for ahref in div.find_all('a')]:
