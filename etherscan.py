@@ -72,7 +72,7 @@ def getToken(soup, tr):
             tr['Description'] = ""
         hldr = 'ContentPlaceHolder1_tr_tokenHolders'
         try:
-            print(soup.find('div', {'class': 'table-responsive mb-2'}).text)
+            pprint(soup.find('div', {'class': 'table-responsive mb-2'}).text)
         except:
             pass
         data = {
@@ -97,7 +97,7 @@ def getToken(soup, tr):
             "AddressType": tr['Subcategory'],
             "Time": time.strftime('%d-%m-%Y %H:%M:%S'),
         }
-        print(json.dumps(data, indent=4))
+        pprint(json.dumps(data, indent=4))
         filename = f"./CSVs/{tr['Label']}-token.csv"
         if not os.path.exists(filename):
             with open(filename, 'w', newline='', encoding='utf8') as file:
@@ -108,8 +108,8 @@ def getToken(soup, tr):
             sfile.write(tkn + "\n")
         scraped['tokens'].append(tkn)
     except:
-        print(soup)
-        print(f"Error on token {tkn}")
+        pprint(soup)
+        pprint(f"Error on token {tkn}")
         traceback.print_exc()
         with open('Error-Token.txt', 'a', encoding='utf8') as efile:
             efile.write(f"{tkn}\n")
@@ -119,7 +119,7 @@ def getAccount(soup, tr):
     addr = tr['Address']
     try:
         try:
-            print(soup.find('div', {'class': 'table-responsive mb-2'}).text.replace('OVERVIEW', ''))
+            pprint(soup.find('div', {'class': 'table-responsive mb-2'}).text.replace('OVERVIEW', ''))
         except:
             pass
         tag = soup.find("span", {"title": 'Public Name Tag (viewable by anyone)'})
@@ -136,7 +136,7 @@ def getAccount(soup, tr):
             "Subcategory": tr['Subcategory'],
             "Time": time.strftime('%d-%m-%Y %H:%M:%S'),
         }
-        print(json.dumps(data, indent=4))
+        pprint(json.dumps(data, indent=4))
         filename = f"./CSVs/{tr['Label']}-accounts.csv"
         if not os.path.exists(filename):
             with open(filename, 'w', newline='', encoding='utf8') as file:
@@ -147,23 +147,28 @@ def getAccount(soup, tr):
             sfile.write(addr + "\n")
         scraped['accounts'].append(addr)
     except:
-        print(soup)
-        print(f"Error on account {addr}")
+        pprint(soup)
+        pprint(f"Error on account {addr}")
         traceback.print_exc()
         with open('Error-Account.txt', 'a', encoding='utf8') as efile:
             efile.write(f"{addr}\n")
-        # print(soup)
+        # pprint(soup)
+
+
+def pprint(msg):
+    print(datetime.datetime.now(), msg)
 
 
 def isBusy(soup):
     if soup.find('title') is not None and "Maintenance Mode" in soup.find('title').text:
+        pprint(f"Maintenance Mode {soup.find('title').text}")
         return True
     if soup.find('h1') is not None:
         # and "request" in soup.find('h1').text.strip().lower()):
         return True
     # if "User account suspended" in str(soup):
     #     checkIp()
-    #     print("Account suspended!")
+    #     pprint("Account suspended!")
     #     return True
     return False
 
@@ -177,31 +182,31 @@ def scrape(driver, tr, at, retry=3):
         addr = tr['Address'] if at == 'accounts' else tr['Contract Address']
         url = f'https://{es}/{"address" if at == "accounts" else "token"}/{addr}'
         with semaphore:
-            print(f"Working on {at[:-1]} {addr} {url}")
+            pprint(f"Working on {at[:-1]} {addr} {url}")
             soup = getSession(driver, url)
         if busy:
             while busy:
                 time.sleep(random.randint(1, 5))
             with semaphore:
-                print(f"Working on {at[:-1]} {addr}")
+                pprint(f"Working on {at[:-1]} {addr}")
                 soup = getSession(driver, url)
         if "User account suspended" in str(soup):
             checkIp()
-            # print("Account suspended!")
+            # pprint("Account suspended!")
             with lock:
                 busy = True
-                print(f"Processing via browser {url}")
+                pprint(f"Processing via browser {url}")
                 driver.get(url)
                 soup = getSoup(driver)
         elif isBusy(soup):
             busy = True
-            print(soup.find('title').text.strip())
+            pprint(soup.find('title').text.strip())
             with lock:
-                print(f"Processing via browser {url}")
+                pprint(f"Processing via browser {url}")
                 driver.get(url)
                 soup = getSoup(driver)
                 while isBusy(soup):
-                    print(soup.find('title').text.strip())
+                    pprint(soup.find('title').text.strip())
                     busy = True
                     driver.get(url)
                     time.sleep(random.randint(3, 5))
@@ -222,13 +227,13 @@ def scrape(driver, tr, at, retry=3):
 
 def scrapeLabel(driver, label, at):
     global running_threads
-    print(f"Working on label {label} ({at})")
+    pprint(f"Working on label {label} ({at})")
     driver.get(f'https://{es}/{at}/label/{label}?subcatid=undefined&size=100&start=0&order=asc')
     fn = tkn_hdrs if at == "tokens" else ac_hdrs
 
     for i in range(2):
         try:
-            print("Fetching rows...")
+            pprint("Fetching rows...")
             getElement(driver, '//tr[@class="odd"]')
             break
         except:
@@ -236,7 +241,7 @@ def scrapeLabel(driver, label, at):
     try:
         getElement(driver, '//tr[@class="odd"]')
     except:
-        print(f"No {at} found!")
+        pprint(f"No {at} found!")
         with open('scraped_labels.txt', 'a', encoding='utf8') as sfile:
             sfile.write(f"{label}-{at}\n")
         scraped['labels'].append(f"{label}-{at}")
@@ -247,15 +252,15 @@ def scrapeLabel(driver, label, at):
     if ul is not None:
         for a in ul.find_all('a', {"class": "nav-link"}):
             subcats[a.text.split()[0]] = a['val']
-    print("Subcategories:", json.dumps(subcats, indent=4))
+    pprint(f"Subcategories: {json.dumps(subcats, indent=4)}")
     d = soup.find('div', {"class": "card-body"})
     desc = ""
     if d and "found" not in d.text:
-        print(d.text.strip())
+        pprint(d.text.strip())
         desc = d.text.strip()
     csv_file = f'./labelcloud/{label}_{at}_Main.csv'
     for subcat in subcats.keys():
-        print(f"Working on category {subcat}")
+        pprint(f"Working on category {subcat}")
         csv_file = f'./labelcloud/{label}_{at}_{subcat}.csv'
         if not os.path.isfile(csv_file):
             start = 0
@@ -273,22 +278,22 @@ def scrapeLabel(driver, label, at):
                             start = page
                     except:
                         traceback.print_exc()
-            print(f'Resuming from page {start}')
+            pprint(f'Resuming from page {start}')
         driver.get(f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}&size=100&start=0&order=asc')
         soup = getSoup(driver)
         pageno = soup.find('li', {'class': 'page-item disabled'})
         if pageno is not None:
             pagenos = pageno.find_all('strong')[1].text
-            print(soup.find('div', {"role": "status"}).text.strip())
-            print("Total pages:", pagenos)
+            pprint(soup.find('div', {"role": "status"}).text.strip())
+            pprint(f"Total pages: {pagenos}")
             for i in range(start, int(pagenos)):
                 trs = ths = []
                 for _ in range(3):
                     try:
-                        print(f"Working on page#{i + 1}")
+                        pprint(f"Working on page#{i + 1}")
                         t_url = f'https://{es}/{at}/label/{label}?subcatid={subcats[subcat]}' \
                                 f'&size=100&start={i * 100}&order=asc'
-                        print(t_url)
+                        pprint(t_url)
                         driver.get(t_url)
                         time.sleep(1)
                         getElement(driver, '//tr[@class="odd" and @role="row"]/td')
@@ -313,9 +318,9 @@ def scrapeLabel(driver, label, at):
                                 else:
                                     data[ths[t].text.strip()] = tds[t].text
                             except:
-                                print(tds)
+                                pprint(tds)
                         rows.append(data)
-                # print(json.dumps(rows, indent=4))
+                # pprint(json.dumps(rows, indent=4))
                 with open(csv_file, 'a', encoding='utf8', newline='') as lfile:
                     csv.DictWriter(lfile, fieldnames=fn).writerows(rows)
     threads = []
@@ -332,10 +337,10 @@ def scrapeLabel(driver, label, at):
                     threads.append(thread)
                     time.sleep(0.1)
                     while running_threads > 100:
-                        print(datetime.datetime.now(), f'Waiting for threads ({running_threads}) to finish...')
+                        pprint(f'Waiting for threads ({running_threads}) to finish...')
                         time.sleep(10)
                 else:
-                    print(f"{at} {addr} already scraped!")
+                    pprint(f"{at} {addr} already scraped!")
                     scraped[at].append(addr)
     for thread in threads:
         thread.join()
@@ -389,7 +394,7 @@ def main():
                     traceback.print_exc()
     for d in ['accounts', 'tokens', 'labels']:
         data[f'left_{d}'] = data[f'total_{d}'] - data[f'scraped_{d}']
-    print(json.dumps(data, indent=4))
+    pprint(json.dumps(data, indent=4))
     time.sleep(2)
     try:
         for div in divs:
@@ -397,10 +402,10 @@ def main():
             for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
                 if at.lower() in ['accounts', 'tokens']:
                     if f"{label}-{at}" not in scraped['labels']:
-                        # print(label, at)
+                        # pprint(label, at)
                         scrapeLabel(driver, label, at)
                     else:
-                        print(f"{label} ({at}) already scraped!")
+                        pprint(f"{label} ({at}) already scraped!")
     except KeyboardInterrupt:
         pass
     combineCSVs()
@@ -416,8 +421,8 @@ def combineCSVs():
         elif file.endswith('-accounts.csv'):
             with open(f'./CSVs/{file}', encoding='utf8') as afile:
                 account_rows.extend([x for x in csv.DictReader(afile)])
-    print(f"Account rows: {len(account_rows)}")
-    print(f"Token rows: {len(token_rows)}")
+    pprint(f"Account rows: {len(account_rows)}")
+    pprint(f"Token rows: {len(token_rows)}")
     with open('AccountsMaster.csv', 'w', newline='', encoding='utf8') as afile:
         c = csv.DictWriter(afile, fieldnames=account_headers)
         c.writeheader()
@@ -435,7 +440,7 @@ def getChromeDriver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
     if debug and os.path.isfile('chromedriver.exe'):
-        # print("Connecting existing Chrome for debugging...")
+        # pprint("Connecting existing Chrome for debugging...")
         chrome_options.debugger_address = "127.0.0.1:9222"
     # chrome_options.add_argument("--blink-settings=imagesEnabled=false")
     chrome_options.add_argument(f'--user-data-dir={os.getcwd()}/ChromeProfile')
@@ -455,24 +460,24 @@ def getChromeDriver():
 def waitCloudflare(driver):
     global busy
     while "Checking your browser" in driver.page_source:
-        print("Waiting for cloudflare...")
+        pprint("Waiting for cloudflare...")
         busy = True
         time.sleep(random.randint(3, 5))
     busy = False
 
 
 def reCaptchaSolver(driver):
-    print("Logging in...")
+    pprint("Logging in...")
     driver.get(page_url)
     time.sleep(2)
     waitCloudflare(driver)
     while "busy" in driver.current_url or "unusual traffic" in driver.page_source.lower():
         time.sleep(3)
         driver.get(page_url)
-        print("Busy")
+        pprint("Busy")
     time.sleep(1)
     if "login" not in driver.current_url:
-        print(f"Already logged in as {driver.find_element(By.TAG_NAME, 'h4').text}")
+        pprint(f"Already logged in as {driver.find_element(By.TAG_NAME, 'h4').text}")
         return
     driver.find_element(By.ID, "ContentPlaceHolder1_txtUserName").send_keys("tapendra")
     driver.find_element(By.ID, "ContentPlaceHolder1_txtPassword").send_keys("12345678")
@@ -480,14 +485,14 @@ def reCaptchaSolver(driver):
     u1 = f"https://2captcha.com/in.php?key={API_KEY}&method=userrecaptcha&googlekey" \
          f"={data_sitekey}&pageurl={page_url}&json=1&invisible=1"
     r1 = requests.get(u1)
-    print(r1.json())
+    pprint(r1.json())
     time.sleep(10)
     rid = r1.json().get("request")
     u2 = f"https://2captcha.com/res.php?key={API_KEY}&action=get&id={int(rid)}&json=1"
     time.sleep(5)
     while True:
         r2 = requests.get(u2)
-        print(r2.json())
+        pprint(r2.json())
         if r2.json().get("status") == 1:
             form_tokon = r2.json().get("request")
             break
@@ -496,7 +501,7 @@ def reCaptchaSolver(driver):
     time.sleep(3)
     button = driver.find_element(By.XPATH, "/html/body/div[1]/main/div/form/div[8]/div[2]/input")
     driver.execute_script("arguments[0].click();", button)
-    print("Logged in!")
+    pprint("Logged in!")
     time.sleep(5)
 
 
@@ -516,7 +521,7 @@ def getSession(driver, url):
 
 
 def logo():
-    print(fr"""
+    pprint(fr"""
     ___________  __   .__                                                   
     \_   _____/_/  |_ |  |__    ____ _______  ______  ____  _____     ____  
      |    __)_ \   __\|  |  \ _/ __ \\_  __ \/  ___/_/ ___\ \__  \   /    \ 
@@ -584,7 +589,7 @@ def checkIp():
     res = requests.get('http://lumtest.com/myip.json',
                        proxies=proxies
                        )
-    print("Lumtest", res.text)
+    pprint(f"Lumtest {res.text}")
 
 
 cert = """-----BEGIN CERTIFICATE-----
