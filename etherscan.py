@@ -155,12 +155,13 @@ def getAccount(soup, tr):
         # pprint(soup)
 
 
-logfile = open(f'log-{datetime.datetime.now().strftime("%d-%m-%y %H-%M-%S")}.txt', 'w', encoding='utf8')
+logfile = open(f'log-{datetime.datetime.now().strftime("%d-%m-%y--%H-%M-%S")}.txt', 'w', encoding='utf8')
 
 
 def pprint(msg):
     print(datetime.datetime.now(), msg)
     logfile.write(f"{datetime.datetime.now()} {msg}\n")
+    logfile.flush()
 
 
 def isBusy(soup):
