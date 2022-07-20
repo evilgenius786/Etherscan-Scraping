@@ -347,7 +347,7 @@ def scrapeLabel(driver, label, at):
                     running_threads += 1
                     threads.append(thread)
                     time.sleep(0.1)
-                    while running_threads > 50:
+                    while running_threads > 100:
                         pprint(f'Waiting for threads ({running_threads}) to finish...')
                         time.sleep(10)
                 else:
