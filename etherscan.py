@@ -32,7 +32,7 @@ data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
 es = "etherscan.io"
 page_url = f'https://{es}/login'
 timeout = 5
-debug = False  # os.path.isfile('chromedriver.exe')
+debug = os.path.isfile('chromedriver.exe')
 if not os.path.isfile("blocked.txt"):
     with open('blocked.txt', 'w') as bfile:
         bfile.write("")
@@ -60,9 +60,9 @@ else:
     proxy = input("Enter proxy endpoint (http://username:password@ip:port): ")
     with open('proxy.txt', 'w', encoding='utf8') as f:
         f.write(proxy)
+summary = {"accounts": {"total": 0}, "tokens": {"total": 0}, "labels": {"total": 0}}
 proxies = {
     "http": proxy,
-    "https": proxy,
     "https": proxy,
 }
 # def processCSV():
@@ -352,13 +352,26 @@ def scrapeLabel(driver, label, at):
                         time.sleep(10)
                 else:
                     pprint(f"{at} {addr} already scraped!")
-                    scraped[at].append(addr)
+                    # scraped[at].append(addr)
     for thread in threads:
         thread.join()
     with open('ScrapedLabels.txt', 'a', encoding='utf8') as sfile:
         sfile.write(f"{label}-{at}\n")
     scraped['labels'].append(label)
+    writesummary()
     combineCSVs()
+
+
+def writesummary():
+    # now=datetime.datetime.now().strftime("%d-%m-%y--%H-%M-%S")
+    for d in ['accounts', 'tokens', 'labels']:
+        summary[d]['scraped'] = len(scraped[d])
+        summary[d]['left'] = summary[d]['total'] - summary[d]['scraped']
+    pprint(json.dumps(summary, indent=4))
+    now = ""
+    with open(f'Summary{now}.json', 'w') as sfile:
+        json.dump(summary, sfile, indent=4)
+    time.sleep(2)
 
 
 def main():
@@ -369,13 +382,12 @@ def main():
         with open('zyte-proxy-ca.crt', 'w') as zfile:
             zfile.write(cert)
     driver = getChromeDriver()
-
     for d in ['CSVs', 'labelcloud']:
         if not os.path.isdir(d):
             os.mkdir(d)
     if not debug:
         reCaptchaSolver(driver)
-        driver.get(f'https://{es}/labelcloud')
+    driver.get(f'https://{es}/labelcloud')
     btnclass = 'col-md-4 col-lg-3 mb-3 secondary-container'
     getElement(driver, f'//div[@class="{btnclass}"]')
     soup = getSoup(driver)
@@ -383,7 +395,6 @@ def main():
         x for x in soup.find_all('div', {'class': btnclass})
         if x.find('button')['data-url'] not in blocked
     ]
-    data = {"total_accounts": 0, "total_tokens": 0, "total_labels": len(divs)}
     for x in ['Labels', 'Accounts', 'Tokens']:
         scraped[x.lower()] = []
         if os.path.isfile(f"Scraped{x}.txt"):
@@ -395,24 +406,23 @@ def main():
                 for line in csv.DictReader(masterfile, fieldnames=fn):
                     scraped[x.lower()].append(line['Address'])
         scraped[x.lower()] = list(set(scraped[x.lower()]))
-        data[f'scraped_{x.lower()}'] = len(scraped[x.lower()])
+
     for div in divs:
         for a in [ahref.text.lower() for ahref in div.find_all('a')]:
             if 'account' in a:
                 try:
-                    data["total_accounts"] += int(a.split('(')[1].split(')')[0])
+                    summary['labels']['total'] += 1
+                    summary["accounts"]["total"] += int(a.split('(')[1].split(')')[0])
                 except:
                     traceback.print_exc()
             elif 'token' in a:
                 try:
-                    data["total_tokens"] += int(a.split('(')[1].split(')')[0])
+                    summary['labels']['total'] += 1
+                    summary["tokens"]['total'] += int(a.split('(')[1].split(')')[0])
                 except:
                     traceback.print_exc()
-    for d in ['accounts', 'tokens', 'labels']:
-        data[f'left_{d}'] = data[f'total_{d}'] - data[f'scraped_{d}']
-        data[f'left_{d}'] = data[f'total_{d}'] - data[f'scraped_{d}']
-    pprint(json.dumps(data, indent=4))
-    time.sleep(2)
+
+    writesummary()
     try:
         for div in divs:
             label = div.find('button')['data-url']
