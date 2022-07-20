@@ -406,7 +406,6 @@ def main():
                 for line in csv.DictReader(masterfile, fieldnames=fn):
                     scraped[x.lower()].append(line['Address'])
         scraped[x.lower()] = list(set(scraped[x.lower()]))
-
     for div in divs:
         for a in [ahref.text.lower() for ahref in div.find_all('a')]:
             if 'account' in a:
@@ -421,7 +420,6 @@ def main():
                     summary["tokens"]['total'] += int(a.split('(')[1].split(')')[0])
                 except:
                     traceback.print_exc()
-
     writesummary()
     try:
         for div in divs:
@@ -587,15 +585,18 @@ def getElement(driver, xpath):
 def checkAccount():
     s = requests.Session()
     s.headers = {'user-agent': 'Mozilla/5.0'}
-    adrs = '0x791018934df872b729eb2852dec200bab6f95709'
-    soup = BeautifulSoup(s.get(f'https://{es}/address/{adrs}').content, 'lxml')
-    ac_data = {
-        "Address": adrs,
-        "Subcategory": 'Subcategory',
-        "Label": 'label',
-        'Name Tag': ""
-    }
-    getAccount(soup, ac_data)
+    with open('Error-Account.txt') as efile:
+        eaccounts = efile.read().splitlines()
+    for adrs in eaccounts:
+        # adrs = '0x791018934df872b729eb2852dec200bab6f95709'
+        soup = BeautifulSoup(s.get(f'https://{es}/address/{adrs}').content, 'lxml')
+        ac_data = {
+            "Address": adrs,
+            "Subcategory": 'Subcategory',
+            "Label": 'label',
+            'Name Tag': ""
+        }
+        getAccount(soup, ac_data)
 
 
 def checkToken():
@@ -645,7 +646,10 @@ xAzDdjEIB/tf1cE0SQ+5sdmepO1cIjQYVSL7U+br+y9A1J9N+FYkBKVevM/W25tb
 iGWBe46djkdm/6eyQ7gtuxhby5lwtRl5sIm9/ID/vWWDMf8O4GPPnW/Xug==
 -----END CERTIFICATE-----"""
 if __name__ == '__main__':
-    # checkToken()
-    main()
-
+    if debug:
+        scraped = {"accounts": [], "tokens": []}
+        # checkToken()
+        checkAccount()
+    else:
+        main()
     # checkIp()
