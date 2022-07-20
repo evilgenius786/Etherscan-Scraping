@@ -45,7 +45,7 @@ token_headers = ['Address', 'AddressLink', 'Name', 'Abbreviation', 'Website', 'S
 ac_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', 'Address', 'Name Tag', 'Balance', 'Txn Count']
 tkn_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', '#', 'Contract Address', 'Token Name', 'Market Cap',
             'Holders', 'Website']
-thread_count = 20
+thread_count = 50
 semaphore = threading.Semaphore(thread_count)
 running_threads = 0
 lock = threading.Lock()
