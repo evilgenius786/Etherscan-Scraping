@@ -7,19 +7,23 @@ import threading
 import time
 import traceback
 
-import requests
-from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
+# import lxml
+import requests  # Fetching URL data without browser, faster and multithreaded way.
+from bs4 import BeautifulSoup  # For parsing HTML
+from fake_useragent import UserAgent  # Random user agent for avoiding blockage
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from urllib3.exceptions import InsecureRequestWarning
-from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.chrome import ChromeDriverManager  # Auto install Chrome version as required
 import urllib3
 
+# Disable warning for insecure connection
 urllib3.disable_warnings(InsecureRequestWarning)
+
+# API key for 2captcha for logging in (required only once), get your own at https://2captcha.com/
 if os.path.isfile('2captcha.txt'):
     with open('2captcha.txt', 'r', encoding='utf8') as f:
         API_KEY = f.read().strip()
@@ -28,31 +32,51 @@ else:
     with open('2captcha.txt', 'w', encoding='utf8') as f:
         f.write(API_KEY)
 
+# 2captcha key for etherscan.io
 data_sitekey = '6Le1YycTAAAAAJXqwosyiATvJ6Gs2NLn8VEzTVlS'
+
 es = "etherscan.io"
 page_url = f'https://{es}/login'
+
+# Timeout for finding an element on browser page
 timeout = 5
+
+# Sets the debug mode for easier debugging
 debug = os.path.isfile('chromedriver.exe')
+
+# Blocked labels
 if not os.path.isfile("blocked.txt"):
     with open('blocked.txt', 'w') as bfile:
         bfile.write("")
 with open('blocked.txt', 'r') as bfile:
     blocked = bfile.read().splitlines()
-account_headers = ['Address', 'Name Tag', 'Name Tag URL', 'AddressLink', 'AddressType', 'LabelIDs',
+
+# CSV headers for Accounts
+account_headers = ['Address', 'NameTag', 'NameTagURL', 'AddressLink', 'AddressType', 'LabelIDs',
                    'Subcategory', 'Time']
+# CSV headers for tokens
 token_headers = ['Address', 'AddressLink', 'Name', 'Abbreviation', 'Website', 'SocialLinks', 'Image', 'LabelIDs',
                  'OverviewText', 'MarketCap', 'Holder', 'AdditionalInfo', 'Overview', 'AddressType', 'Time']
-ac_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', 'Address', 'Name Tag', 'Balance', 'Txn Count']
+# Account table headers on etherscan page
+ac_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', 'Address', 'NameTag', 'Balance', 'Txn Count']
+# Token table headers on etherscan page
 tkn_hdrs = ['Subcategory', 'Desc', 'Label', 'Page', 'AT', '#', 'Contract Address', 'Token Name', 'Market Cap',
             'Holders', 'Website']
+# Number of threads to use
 thread_count = 50
+# Semaphore to keep count of threads
 semaphore = threading.Semaphore(thread_count)
+# Initial number of runnign threads, should be 0
 running_threads = 0
+# Lock for writing files
 lock = threading.Lock()
+# Variable to keep track if website blocked us or not
 busy = False
+# Dict/JSON for keeping record of scraped labels, tokens and accounts
 scraped = {}
+# Version number of file
 version = 4.0
-
+# Rotating proxy endpoint
 if os.path.isfile('proxy.txt'):
     with open('proxy.txt', 'r', encoding='utf8') as f:
         proxy = f.read().strip()
@@ -60,18 +84,19 @@ else:
     proxy = input("Enter proxy endpoint (http://username:password@ip:port): ")
     with open('proxy.txt', 'w', encoding='utf8') as f:
         f.write(proxy)
+# Keeps record of total, left and scraped tokens, labels and accounts
 summary = {"accounts": {"total": 0}, "tokens": {"total": 0}, "labels": {"total": 0}}
 proxies = {
     "http": proxy,
     "https": proxy,
 }
-# def processCSV():
-#     for at in ['Account','Token']:
+
+# Creates directory for logs, each run has separate log according to time stamp
 if not os.path.isdir('logs'):
     os.mkdir('logs')
 logfile = open(f'./logs/log-{datetime.datetime.now().strftime("%d-%m-%y--%H-%M-%S")}.txt', 'w', encoding='utf8')
 
-
+# Parse token data from etherscan page HTML and append it to result file(s).
 def getToken(soup, tr):
     tkn = tr['Contract Address']
     try:
@@ -133,11 +158,11 @@ def getAccount(soup, tr):
             pass
         tag = soup.find("span", {"title": 'Public Name Tag (viewable by anyone)'})
         data = {
-            "Name Tag": tag.text if tag is not None else tr['Name Tag'],
+            "NameTag": tag.text if tag is not None else tr['Name Tag'],
             "Address": addr,
             "AddressLink": f"https://{es}/address/{addr}",
             "AddressType": soup.find('h1').text.strip().split()[0] if soup.find('h1') is not None else "",
-            "Name Tag URL": tag.parent.find('a')[
+            "NameTagURL": tag.parent.find('a')[
                 'href'] if tag is not None and tag.parent is not None and tag.parent.find('a') is not None else "",
             "LabelIDs": [a.text for a in soup.find_all('div', {'class': 'mt-1'})[1].find_all('a') if
                          soup.find_all('div', {'class': 'mt-1'}) is not None and len(
@@ -594,7 +619,7 @@ def checkAccount():
             "Address": adrs,
             "Subcategory": 'Subcategory',
             "Label": 'label',
-            'Name Tag': ""
+            'NameTag': ""
         }
         getAccount(soup, ac_data)
 
