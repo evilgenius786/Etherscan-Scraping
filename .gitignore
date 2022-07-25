@@ -6,3 +6,15 @@
 /CSVs/
 /chromedriver.exe
 /blocked.txt
+/labelcloud/
+/2captcha.txt
+/Error-Account.txt
+/Error-Token.txt
+/proxy.txt
+/ScrapedAccounts.txt
+/ScrapedLabels.txt
+/Summary.json
+/ScrapedTokens.txt
+/zyte-proxy-ca.crt
+/logs/
+/ChromeProfile/

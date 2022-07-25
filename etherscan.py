@@ -42,7 +42,7 @@ page_url = f'https://{es}/login'
 timeout = 5
 
 # Sets the debug mode for easier debugging
-debug = os.path.isfile('chromedriver.exe')
+debug = False  # os.path.isfile('chromedriver.exe')
 
 # Blocked labels
 if not os.path.isfile("blocked.txt"):
@@ -160,7 +160,7 @@ def getAccount(soup, tr):
             pass
         tag = soup.find("span", {"title": 'Public Name Tag (viewable by anyone)'})
         data = {
-            "NameTag": tag.text if tag is not None else tr['Name Tag'],
+            "NameTag": tag.text if tag is not None else tr['NameTag'],
             "Address": addr,
             "AddressLink": f"https://{es}/address/{addr}",
             "AddressType": soup.find('h1').text.strip().split()[0] if soup.find('h1') is not None else "",
