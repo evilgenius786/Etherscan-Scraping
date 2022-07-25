@@ -96,6 +96,7 @@ if not os.path.isdir('logs'):
     os.mkdir('logs')
 logfile = open(f'./logs/log-{datetime.datetime.now().strftime("%d-%m-%y--%H-%M-%S")}.txt', 'w', encoding='utf8')
 
+
 # Parse token data from etherscan page HTML and append it to result file(s).
 def getToken(soup, tr):
     tkn = tr['Contract Address']
@@ -149,6 +150,7 @@ def getToken(soup, tr):
             efile.write(f"{tkn}\n")
 
 
+# Parse account data from etherscan page HTML and append it to result file(s).
 def getAccount(soup, tr):
     addr = tr['Address']
     try:
@@ -189,6 +191,7 @@ def getAccount(soup, tr):
         # pprint(soup)
 
 
+# Print with time stamp.
 def pprint(msg):
     m = f"{datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')} | {msg}\n"
     print(m.strip())
@@ -196,20 +199,16 @@ def pprint(msg):
     logfile.flush()
 
 
+# Return true if website block us (temporarily) otherwise false.
 def isBusy(soup):
     if soup.find('title') is not None and "Maintenance Mode" in soup.find('title').text:
         pprint(f"Maintenance Mode {soup.find('title').text}")
         return True
-    # if soup.find('h1') is not None:
-    # and "request" in soup.find('h1').text.strip().lower()):
-    # return True
-    # if "User account suspended" in str(soup):
-    #     checkIp()
-    #     pprint("Account suspended!")
-    #     return True
     return False
 
 
+# Fetch HTML from URL of token or address and forward soup respective to parsing function.
+# at = "accounts or tokens"
 def scrape(driver, tr, at, retry=3):
     global running_threads
     try:
@@ -262,6 +261,9 @@ def scrape(driver, tr, at, retry=3):
             return
 
 
+# Scrapes table data of tokens or addresses of a given label and save them in CSV,
+# once it finishes, it starts scraping those accounts and tokens.
+# This CSV caching makes it resumable.
 def scrapeLabel(driver, label, at):
     global running_threads
     pprint(f"Working on label {label} ({at})")
@@ -359,6 +361,7 @@ def scrapeLabel(driver, label, at):
                 # pprint(json.dumps(rows, indent=4))
                 with open(csv_file, 'a', encoding='utf8', newline='') as lfile:
                     csv.DictWriter(lfile, fieldnames=fn).writerows(rows)
+    # Once all pages are scraped, it starts scraping accounts and tokens.
     threads = []
     with open(csv_file, 'r', encoding='utf8') as cfile:
         x = csv.DictReader(cfile, fieldnames=fn)
@@ -383,10 +386,13 @@ def scrapeLabel(driver, label, at):
     with open('ScrapedLabels.txt', 'a', encoding='utf8') as sfile:
         sfile.write(f"{label}-{at}\n")
     scraped['labels'].append(label)
+    # Write summary.json after processing accounts and tokens of each label.
     writesummary()
+    # Append the CSV data to the Master CSV file.
     combineCSVs()
 
 
+# Prints and write summary to summary.json
 def writesummary():
     # now=datetime.datetime.now().strftime("%d-%m-%y--%H-%M-%S")
     for d in ['accounts', 'tokens', 'labels']:
@@ -398,6 +404,8 @@ def writesummary():
         json.dump(summary, sfile, indent=4)
     time.sleep(2)
 
+
+# Initializes and creates directories, files and required variables.
 
 def main():
     global scraped
@@ -420,6 +428,7 @@ def main():
         x for x in soup.find_all('div', {'class': btnclass})
         if x.find('button')['data-url'] not in blocked
     ]
+    # Loads sraped label, account and tokens data into variable to prevent duplicates.
     for x in ['Labels', 'Accounts', 'Tokens']:
         scraped[x.lower()] = []
         if os.path.isfile(f"Scraped{x}.txt"):
@@ -431,6 +440,7 @@ def main():
                 for line in csv.DictReader(masterfile, fieldnames=fn):
                     scraped[x.lower()].append(line['Address'])
         scraped[x.lower()] = list(set(scraped[x.lower()]))
+    # Creates summary.
     for div in divs:
         for a in [ahref.text.lower() for ahref in div.find_all('a')]:
             if 'account' in a:
@@ -445,8 +455,10 @@ def main():
                     summary["tokens"]['total'] += int(a.split('(')[1].split(')')[0])
                 except:
                     traceback.print_exc()
+    # Write and print summary.
     writesummary()
     try:
+        # Calls function to scrape accounts and tokens from label
         for div in divs:
             label = div.find('button')['data-url']
             for at in [a['href'].split('/')[1] for a in div.find_all('a')]:
@@ -458,9 +470,11 @@ def main():
                         pprint(f"{label} ({at}) already scraped!")
     except KeyboardInterrupt:
         pass
+    # Combine all CSV files to Master file.
     combineCSVs()
 
 
+# Combine all CSV files to Master file.
 def combineCSVs():
     token_rows = []
     account_rows = []
@@ -483,6 +497,7 @@ def combineCSVs():
         c.writerows(token_rows)
 
 
+# Returns ChromeDriver object.
 def getChromeDriver():
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('start-maximized')
@@ -507,6 +522,7 @@ def getChromeDriver():
     return driver
 
 
+# Wait if stuck because of cloudflare.
 def waitCloudflare(driver):
     global busy
     while "Checking your browser" in driver.page_source:
@@ -516,6 +532,7 @@ def waitCloudflare(driver):
     busy = False
 
 
+# Solves recaptcha (only required for login).
 def reCaptchaSolver(driver):
     pprint("Logging in...")
     driver.get(page_url)
@@ -555,6 +572,7 @@ def reCaptchaSolver(driver):
     time.sleep(5)
 
 
+# Copies cookies from ChromeDriver object to Requests Session object.
 def getSession(driver, url):
     s = requests.Session()
     s.headers = {
@@ -570,6 +588,7 @@ def getSession(driver, url):
                                ).content, 'lxml')
 
 
+# Prints logo banner.
 def logo():
     pprint(fr"""
     ___________  __   .__                                                   
@@ -590,11 +609,13 @@ ________________________________________________________________________________
 """)
 
 
+# Returns soup object from HTML source code.
 def getSoup(driver):
     time.sleep(1)
     return BeautifulSoup(driver.page_source, 'lxml')
 
 
+# Returns text of specific tag.
 def getTag(soup, tag, attrib):
     try:
         return soup.find(tag, attrib).text.strip()
@@ -602,11 +623,13 @@ def getTag(soup, tag, attrib):
         return ""
 
 
+# Waits for cloudflare and returns an element in browser page.
 def getElement(driver, xpath):
     waitCloudflare(driver)
     return WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, xpath)))
 
 
+# Test function for test account.
 def checkAccount():
     s = requests.Session()
     s.headers = {'user-agent': 'Mozilla/5.0'}
@@ -624,6 +647,7 @@ def checkAccount():
         getAccount(soup, ac_data)
 
 
+# Test function for test token.
 def checkToken():
     s = requests.Session()
     s.headers = {'user-agent': 'Mozilla/5.0'}
@@ -638,6 +662,7 @@ def checkToken():
     getToken(soup, tk_data)
 
 
+# Checks IP of proxy.
 def checkIp():
     res = requests.get('http://lumtest.com/myip.json',
                        proxies=proxies
@@ -645,6 +670,7 @@ def checkIp():
     pprint(f"Lumtest {res.text}")
 
 
+# Zyte-proxy certificate.
 cert = """-----BEGIN CERTIFICATE-----
 MIIERzCCAy+gAwIBAgIJAN/VCi6U4Y5SMA0GCSqGSIb3DQEBCwUAMIG5MQswCQYD
 VQQGEwJJRTEQMA4GA1UECAwHTXVuc3RlcjENMAsGA1UEBwwEQ29yazEUMBIGA1UE
@@ -670,6 +696,7 @@ iON6JK2HOI0/LsKxPXUk9cHrli7e99yazS5+jBhRFGx8AVfoJg/6uLe6IKuw5xEZ
 xAzDdjEIB/tf1cE0SQ+5sdmepO1cIjQYVSL7U+br+y9A1J9N+FYkBKVevM/W25tb
 iGWBe46djkdm/6eyQ7gtuxhby5lwtRl5sIm9/ID/vWWDMf8O4GPPnW/Xug==
 -----END CERTIFICATE-----"""
+# And that's pretty much it!! :)
 if __name__ == '__main__':
     if debug:
         scraped = {"accounts": [], "tokens": []}
